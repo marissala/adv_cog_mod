@@ -1,0 +1,14 @@
+model {
+  #theta ~ dunif(0,1)
+  #b[1] <- theta
+  #b[2] <- 1 - theta
+  b[1] ~ dunif(0,1)
+  b[2] ~ dunif(0,1)
+
+  for (t in 1:ntrials) {
+    #agent that chooses randomly between options 1 and 2, with left/right bias = b[l,r]
+    x[t] ~ dcat(b)
+    
+  }
+
+}

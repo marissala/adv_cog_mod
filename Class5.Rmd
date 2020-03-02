@@ -1,0 +1,120 @@
+---
+title: "Class56"
+author: "Maris Sala"
+date: "2/26/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+set.seed(1982)
+setwd("~/Aarhus University/Advanced cog mod/progre")
+
+pacman::p_load(extraDistr, R2jags)
+
+```
+
+Generate a payoff matrix for the bandit task
+choice of bandit A = 30% of payoff 2, otherwise 0
+choice of bandit B = 70% of payoff 1, otherwise 0
+
+```{r}
+ntrials <- 100
+
+Aprob <- .3
+Arew <- 2
+Bprob <- .7
+Brew <- 1
+
+#generate a payoff matrix
+payoff <- cbind(rbinom(ntrials, 1, Aprob) * Arew, rbinom(ntrials, 1, Bprob) * Brew) #why rbinom?
+
+colSums(payoff)
+```
+
+We just built the world, lets now build the agent to live in that world
+Random model!
+```{r}
+### RANDOM MODEL ###
+
+theta <- .7
+#b <- c(theta,1-theta)
+
+source("random_model.R")
+random_sims <- random(payoff, ntrials, theta)
+
+#-----------------#
+# jags time?!
+
+#Applying the random model (JAGS) to simulated data (random_sims)
+#choice
+x <- random_sims$x
+
+data <- list("x", "ntrials")
+
+params <- c("b")
+
+samples <- jags(data, inits = NULL, params,
+                model.file = "random.txt",
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
+
+samples
+# we want to get a b with max posteriror of .7 and b[2] of .3 (paremeter recovery)
+
+
+# density plot, distribution says it dont look good
+plot(density(samples$BUGSoutput$sims.list$b[,1]))
+
+plot(density(samples$BUGSoutput$sims.list$b[,2]))
+
+
+
+```
+
+Parameter recovery
+```{r}
+niteration <- 100
+true_theta <- array(0,c(niteration))
+infer_b1 <- array(0,c(niteration))
+infer_b2 <- array(0,c(niteration))
+
+for (i in i:niteration) {
+  #lets see what values
+  theta <- runif(1,0,1) #one value per trial, this is what we wanna get out usually
+  b <- c(theta,1-theta)
+  
+  # run function and store responses
+  random_sims <- random(payoff, ntrials, b)
+  
+  x <- random_sims$x
+  
+  # set up jags
+  data <- list("x", "ntrials")
+
+  params <- c("b")
+
+  samples <- jags(data, inits = NULL, params,
+                model.file = "random.txt",
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
+  
+  #fill arrays for parameter recovery process
+  true_theta[i] <- theta
+  
+  # find maximum a posterior
+  posterior <- samples$BUGSoutput$sims.list$b[,1]
+  infer_b1[i] <- density(posterior)$x[which(density(posterior)$y==max(density(posterior)$y))]
+  
+  posterior <- samples$BUGSoutput$sims.list$b[,2]
+  infer_b2[i] <- density(posterior)$x[which(density(posterior)$y==max(density(posterior)$y))]
+}
+
+par(mfrow=c(2,1))
+plot(true_theta,infer_b1)
+plot(1-true_theta,infer_b2)
+
+```
+

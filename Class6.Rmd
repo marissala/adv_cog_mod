@@ -1,0 +1,111 @@
+---
+title: "Class6"
+author: "Maris Sala"
+date: "3/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+set.seed(1982)
+pacman::p_load(R2jags, extraDistr)
+setwd("~/Aarhus University/Advanced cog mod/progre")
+```
+
+Generate task environment
+```{r}
+ntrials <- 100
+
+Aprob <- .3
+Arew <- 2
+
+Bprob <- .8
+Brew <- 1
+
+#generate a payoff matrix
+payoff <- cbind(rbinom(ntrials, 1, Aprob) * Arew, rbinom(ntrials, 1, Bprob) * Brew) #why rbinom?
+
+colSums(payoff)
+```
+
+Run the Rescola-Wagner model
+```{r}
+# lets call the function we wrote
+# first give it some parameters
+
+a <- .4
+beta <- 1
+
+source("RW.R")
+
+RW_sims <- RW(payoff, ntrials, a, beta)
+
+par(mfrow=c(3,1)) #plot with 3 rows and 1 column
+plot(RW_sims$Q[,1])
+plot(RW_sims$Q[,2])
+plot(X)
+
+```
+
+recovering parameters with JAGS
+```{r}
+X <- RW_sims$x
+r <- RW_sims$r
+
+data <- list("X", "r", "ntrials")
+params <- c("a", "beta")
+
+samples <- jags.parallel(data, inits = NULL, params,
+                model.file = "RW.txt",
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
+
+a_infer <- samples$BUGSoutput$sims.list$a
+beta_infer <- samples$BUGSoutput$sims.list$beta
+
+par(mfrow=c(1,1))
+plot(density(a_infer))
+plot(density(beta_infer))
+
+
+#run full parameter recovery
+niterations <- 10
+true_a <- array(0, c(niterations))
+true_beta <- array(0, c(niterations))
+
+infer_a <- array(0,c(niterations))
+infer_beta <- array(0,c(niterations))
+
+
+for (i in 1:niterations) {
+  # true parameters
+  a <- runif(1,0,1)
+  beta <- runif(1,0,5)
+  
+  #fun function and extract responses
+  RW_sims <- RW(payoff, ntrials, a, beta)
+  X <- RW_sims$x
+  r <- RW_sims$r
+  
+  data <- list("X", "r", "ntrials")
+  params <- c("a", "beta")
+
+  samples <- jags.parallel(data, inits = NULL, params,
+                  model.file = "RW.txt",
+                  n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
+  true_a[i] <- a
+  true_beta[i] <- beta
+  
+  #find max posteriori
+  X <- samples$BUGSoutput$sims.list$a
+  infer_a[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
+  
+  X <- samples$BUGSoutput$sims.list$beta
+  infer_beta[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
+  
+  print(i)
+}
+```
+

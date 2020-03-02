@@ -1,0 +1,180 @@
+---
+title: "Class4"
+author: "Maris Sala"
+date: "2/19/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#just coding loops
+parameter recovery - still
+```{r}
+set.seed(1982)
+setwd("~/Aarhus University/Advanced cog mod/progre")
+```
+
+
+Recover dif parameter combinations for the learning model
+```{r}
+#the alpha we put in
+trueAlpha <- array(0,c(20))
+inferredAlpha <- array(c(20)) #map
+
+trueTheta <- array(0,c(20))
+inferredTheta <- array(c(20))
+
+ntrials <- 100
+
+for (i in 1:20) {
+  Glearn <- array(0, c(100)) #guess for our learning model
+  theta <- array(0, c(100)) #theta is going to update every trial
+  # we need a starting theta!
+  alpha <- runif(1,0,1)#learning rate, 
+  theta1 <- runif(1,0,1)
+  
+  #need a theta on trial 1, have to define the 1st trial, simulation runs from trial 2
+  theta[1] <- theta1
+  Glearn[1] <- rbinom(1,1,theta[1])
+  
+  for (t in 2:ntrials) {
+    
+    theta[t] <- theta[t-1]^(1/(1+alpha)) #this is the learning rule/curve, focus on this next week
+    Glearn[t] <- rbinom(1,1,theta[t])
+  
+  }
+  
+  trueAlpha[i] <- alpha
+  trueTheta[i] <- theta1
+  
+  # ---- run inference for the learning model using learning simulations
+  G <- Glearn
+
+  data <- list("G", "ntrials") #has to be a list in this case, look in the workspace for G
+  params <- c("theta", "theta1", "alpha") #what are we interested in keeping track of, theta as a distribution
+  
+  samples <- jags(data, inits = NULL, params,
+                  model.file = "chick_learning.txt",
+                  n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
+  
+  alpha.post <- samples$BUGSoutput$sims.list$alpha
+  #max a posteriori for alpha
+  inferredAlpha[i] <- density(alpha.post)$x[which(density(alpha.post)$y==max(density(alpha.post)$y) )]
+  
+  theta1.post <- samples$BUGSoutput$sims.list$theta1
+  #max a posteriori for alpha
+  inferredTheta[i] <- density(theta1.post)$x[which(density(theta1.post)$y==max(density(theta1.post)$y) )]
+}
+
+
+```
+
+```{r}
+plot(trueAlpha,inferredAlpha)
+plot(trueTheta, inferredTheta)
+```
+
+Model recovery!
+have to have 1 model thats better than the other bc we are using the DIC to compare 2 models
+use the fixed model and learning model as a control against each other
+
+```{r}
+
+#model comparison - homework
+
+## MODEL 1: Fixed Theta model ##
+Gfixed <- array(0, c(100)) #100 elements of 0s
+#array(0, c(2,100)) if theres 2 agents for example
+#empty array we will fill up with a simple forward model
+
+#need a fixed parameter
+theta <- .7 #anything thats less than 0 more than 1 is not legit
+#someone who is okay at this task
+
+ntrials <- 100
+
+for (t in 1:ntrials) {
+  Gfixed[t] <- rbinom(1,1,theta) #each element in the array populated with consequences of the model
+}
+
+# MODEL 2
+Glearn <- array(0, c(100)) #guess for our learning model
+theta <- array(0, c(100)) #theta is going to update every trial
+# we need a starting theta!
+alpha <- .05 #learning rate, can never be interpreted contextually free
+theta1 <- .5
+
+ntrials <- 100
+
+#need a theta on trial 1, have to define the 1st trial, simulation runs from trial 2
+theta[1] <- theta1
+Glearn[1] <- rbinom(1,1,theta[1])
+
+for (t in 2:ntrials) {
+  
+  theta[t] <- theta[t-1]^(1/(1+alpha)) #this is the learning rule/curve, focus on this next week
+  Glearn[t] <- rbinom(1,1,theta[t])
+
+}
+
+
+# -- run inference for fixed data and fixed model
+G <- Gfixed
+
+data <- list("G", "ntrials") #has to be a list in this case, look in the workspace for G
+params <- c("theta") #what are we interested in keeping track of, theta as a distribution
+
+samples <- jags(data, inits = NULL, params,
+                model.file = "chick.txt",
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1) #inits could be important when there are convergence issues
+
+DIC.fixed_fixed <- samples$BUGSoutput$DIC
+
+# put fixed data in the learning model
+G <- Glearn
+
+data <- list("G", "ntrials") #has to be a list in this case, look in the workspace for G
+params <- c("theta") #what are we interested in keeping track of, theta as a distribution
+
+samples <- jags(data, inits = NULL, params,
+                model.file = "chick.txt", #DONT CHANGE THE FILE HERE!
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1) #inits could be important when there are convergence issues
+
+DIC.learning_fixed <- samples$BUGSoutput$DIC
+
+# fixed data to learning model
+G <- Gfixed
+
+data <- list("G", "ntrials") #has to be a list in this case, look in the workspace for G
+params <- c("theta") #what are we interested in keeping track of, theta as a distribution
+
+samples <- jags(data, inits = NULL, params,
+                model.file = "chick_learning.txt", #DONT CHANGE THE FILE HERE!
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1) #inits could be important when there are convergence issues
+
+DIC.fixed_learning <- samples$BUGSoutput$DIC
+
+
+# fixed data to learning model
+G <- Glearn
+
+data <- list("G", "ntrials") #has to be a list in this case, look in the workspace for G
+params <- c("theta") #what are we interested in keeping track of, theta as a distribution
+
+samples <- jags(data, inits = NULL, params,
+                model.file = "chick_learning.txt", #DONT CHANGE THE FILE HERE!
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1) #inits could be important when there are convergence issues
+
+DIC.learning_learning <- samples$BUGSoutput$DIC
+
+
+DIC.fixed_fixed
+DIC.learning_fixed
+DIC.fixed_learning
+DIC.learning_learning
+
+```
+DIC fixed should be lower than DIC learning because its its own model - so this is crap model recovery
+make a confusion matrix!
