@@ -37,6 +37,8 @@ for (t in 1:ntrials) {
 }
 
 sum(Gfixed) #we'd want this to be 70 ideally bc theta is .7
+
+plot(theta)
 ```
 
 <- because then u can copy paste to jags
@@ -93,7 +95,9 @@ plot(x)
 
 plot(density(x)) #this is the posterior
 #^this is the inference basically, it should be 0.7 but its more around 0.6
+x
 
+median(x)
 ```
 stuff we get out is a distribution, list of samples from a posterior distribution
 the more chains the more independence you have in results but also the more comp power it takes
@@ -117,8 +121,14 @@ plot(x)
 
 plot(density(x)) #this is the posterior
 
-
 plot(density(samples$BUGSoutput$sims.list$theta[,2])) #guesses at theta
+
+median(samples$BUGSoutput$sims.list$theta[,2])
+
+# see what the alpha is to be estimated as
+plot(density(samples$BUGSoutput$sims.list$alpha))
+
+median(samples$BUGSoutput$sims.list$alpha)
 
 ```
 
