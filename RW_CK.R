@@ -1,5 +1,5 @@
 ## copied from RW.R, comments not updated
-RW_CK <- function(payoff,ntrials,a,beta){ #a - learning rate, b - inverse heat
+kernel <- function(payoff,ntrials,a,beta){ #a - learning rate, b - inverse heat
   
   #set up arrays you wanna fill
   X <- array(0, c(ntrials)) #choices
