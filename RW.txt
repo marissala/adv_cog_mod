@@ -1,7 +1,8 @@
 model {
 
   a ~ dunif(0,1)
-  beta ~ dnorm(0,.01)T(0,)
+  #beta ~ dnorm(0,.01)T(0,)
+  beta ~ dgamma(1,1) #funky stuff
 
   #set values for trial 1
   Q[1,1] ~ dnorm(0,.01)T(0,)
