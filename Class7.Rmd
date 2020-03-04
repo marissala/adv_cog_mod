@@ -59,7 +59,7 @@ data <- list("X", "r", "ntrials")
 params <- c("a", "beta")
 
 samples <- jags.parallel(data, inits = NULL, params,
-                model.file = "kernel.txt",
+                model.file = "jags_models/kernel.txt",
                 n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
 
 a_infer <- samples$BUGSoutput$sims.list$a
@@ -69,7 +69,15 @@ par(mfrow=c(1,1))
 plot(density(a_infer))
 plot(density(beta_infer))
 
+```
 
+Model recovery
+```{r}
+
+```
+
+
+```{r}
 #run full parameter recovery
 niterations <- 10
 true_a <- array(0, c(niterations))
