@@ -9,3 +9,43 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+set.seed(1982)
+#setwd("~/Aarhus University/Advanced cog mod/progre")
+pacman::p_load(extraDistr, R2jags)
+```
+
+Generate task environment
+```{r}
+ntrials <- 100
+
+Aprob <- .3
+Arew <- 2
+
+Bprob <- .8
+Brew <- 1
+
+#generate a payoff matrix
+payoff <- cbind(rbinom(ntrials, 1, Aprob) * Arew, rbinom(ntrials, 1, Bprob) * Brew) #why rbinom?
+
+colSums(payoff)
+```
+
+Run the Rescola-Wagner model
+```{r}
+# lets call the function we wrote
+# first give it some parameters
+
+a <- .4
+beta <- 1
+
+source("RW_CK.R")
+
+RW_sims <- RW_CK(payoff, ntrials, a, beta)
+
+par(mfrow=c(3,1)) #plot with 3 rows and 1 column
+plot(RW_sims$CK[,1])
+plot(RW_sims$CK[,2])
+plot(X)
+
+```
