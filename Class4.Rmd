@@ -14,6 +14,7 @@ parameter recovery - still
 ```{r}
 set.seed(1982)
 setwd("~/Aarhus University/Advanced cog mod/progre")
+library(R2jags)
 ```
 
 
