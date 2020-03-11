@@ -1,0 +1,68 @@
+---
+title: "Class9"
+author: "Maris Sala"
+date: "3/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+set.seed(1982)
+#setwd("~/Aarhus University/Advanced cog mod/progre")
+pacman::p_load(extraDistr, R2jags)
+```
+
+Task environment - IGT so 4 decks instead of 2, plus both wins and losses (so we dont just copy previous task environment code)
+
+```{r}
+# Bad frequent
+A_R <- rep(100,10) #reward for deck A, 10 outcomes
+A_L <- c(rep(-250,5), rep(0,5)) #losses 50% of the times
+# Bad infrequent
+B_R <- rep(100,10)
+B_L <- c(rep(-1250,1), rep(0,9)) #one big loss but very infrequent
+# Good frequent
+C_R <- rep(50,10)
+C_L <- c(rep(-50,5), rep(0,5))
+# Good infrequent
+D_R <- rep(50,10)
+D_L <- c(rep(-250,1), rep(0,9))
+
+# For the forward simulations: shuffle the deck
+# Set up the environment with separate wins and losses as if they will be presented separately to the participants
+A <- c()
+for (i in 1:10) { A <- (append(A,A_R + sample(A_L))) } # To each of the 4 decks, adds losses and rewards together
+
+B <- c()
+for (i in 1:10) { B <- (append(B,B_R + sample(B_L))) }
+
+C <- c()
+for (i in 1:10) { C <- (append(C,C_R + sample(C_L))) }
+
+D <- c()
+for (i in 1:10) { D <- (append(D,D_R + sample(D_L))) }
+
+# The sums of taking only from one deck: -2500 or +2500
+sum(A)
+sum(B)
+sum(C)
+sum(D)
+
+# Payoff matrix
+payoff <- cbind(A,B,C,D)
+```
+
+Build the PVL-delta model
+```{r}
+w <- 2 # Loss aversion (2 from Khaneman)
+A <- .5 # Shape of the utility function, between 0 and 1 to have the proper shape
+theta <- 3 # Response consistency
+a <- .1 # Learning rate
+
+ntrials <- 100
+
+```
+
