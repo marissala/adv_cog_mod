@@ -21,7 +21,7 @@ model {
       
     }
     
-    #loose choice rule!
+    #luce choice rule!
     for (k in 1:2) {
       
       #lets calculate p
