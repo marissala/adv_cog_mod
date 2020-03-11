@@ -75,3 +75,23 @@ plot(PVL_sims$Ev[,4])
 ```
 
 There is some error in the code! - plots one as flattened out on 0
+
+```{r}
+x <- PVL_sims$x
+X <- PVL_sims$X
+
+data <- list("x", "X", "ntrials")
+params <- c("w", "A", "theta", "a")
+
+samples <- jags.parallel(data, inits = NULL, params,
+                model.file = "jags_models/PVL.txt",
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
+
+a_infer <- samples$BUGSoutput$sims.list$a
+beta_infer <- samples$BUGSoutput$sims.list$beta
+
+par(mfrow=c(1,1))
+plot(density(a_infer))
+plot(density(beta_infer))
+```
+
