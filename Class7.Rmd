@@ -31,13 +31,13 @@ payoff <- cbind(rbinom(ntrials, 1, Aprob) * Arew, rbinom(ntrials, 1, Bprob) * Br
 colSums(payoff)
 ```
 
-Run the Rescola-Wagner model
+Run the CK model
 ```{r}
 # lets call the function we wrote
 # first give it some parameters
 
 a <- .1
-beta <- 5
+beta <- 5 #consistency parameter, the higher the more consistent (less explorative) the agent is
 
 source("RW_CK.R")
 

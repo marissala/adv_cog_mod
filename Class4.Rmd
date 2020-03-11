@@ -179,3 +179,28 @@ DIC.learning_learning
 ```
 DIC fixed should be lower than DIC learning because its its own model - so this is crap model recovery
 make a confusion matrix!
+
+```{r}
+pacman::p_load(caret)
+
+predicted <- array(0, c(1,2))
+predicted[1,1] = DIC.learning_fixed
+predicted[1,2] = DIC.fixed_learning
+
+actual <- array(0, c(1,2))
+actual[1,1] <- DIC.fixed_fixed
+actual[1,2] <- DIC.learning_learning
+
+predicted = as.data.frame(predicted)
+predicted$V1 = as.factor(predicted$V1)
+predicted$V2 = as.factor(predicted$V2)
+actual = as.data.frame(actual)
+actual$V1 = as.factor(actual$V1)
+actual$V2 = as.factor(actual$V2)
+
+x <- factor(c(DIC.learning_fixed, DIC.fixed_learning))
+y <- factor(c(DIC.fixed_fixed, DIC.learning_learning))
+
+confusionMatrix(x,y)
+```
+
