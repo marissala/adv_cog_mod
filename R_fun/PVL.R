@@ -9,6 +9,7 @@ PVL <- function(payoff,ntrials,w,A,a,theta) {
   exp_p <- array(0, c(ntrials,4)) #exponentialized part of the prob value
   p <- array(0, c(ntrials,4)) #need a p for each deck
   
+  # Initiate x with equal chance to draw 1st card from any deck
   x[1] <- rcat(1, c(.25,.25,.25,.25))
   
   #-------Plot prospect theory function - code to play around with
