@@ -1,0 +1,28 @@
+model {
+
+  w ~ dnorm(0,1)T(0,)
+
+  for (t in 2:ntrials) {
+    
+    for (d in 1:4) {
+      
+      u[t,d] <- ifelse(X[t-1] < 0, -w*abs(X[t-1])^A, abs(X[t-1])^A)
+      
+      Ev_update[t,d] <- Ev[t-1,d] + (a * (u[t] - Ev[t-1,d]))
+      
+      Ev[t,d] <- ifelse(x[t-1] == d, Ev_update[t,d], Ev[t-1,d])
+      
+      exp_p[t,d] <- exp(theta * Ev[t,d])
+      
+      }
+    
+    for (d in 1:4) {
+      p[t,d] <- exp_p[t,d] / sum(exp_p[t,])
+    }
+    
+    x[t] <- rcat(1,p[t,]) #sample
+    
+    X[t] <- payoff[t,x[t]] #value
+    
+  }
+}
