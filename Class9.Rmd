@@ -64,5 +64,10 @@ a <- .1 # Learning rate
 
 ntrials <- 100
 
+source("R_fun/PVL.R")
+PVL_sims <- PVL(payoff, ntrials, w, A, a, theta)
+
+par(mfrow=c(2,2))
+plot(PVL_sims$Ev[,1])
 ```
 
