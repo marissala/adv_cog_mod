@@ -29,7 +29,7 @@ PVL <- function(payoff,ntrials,w,A,a,theta) {
       u[t,d] <- ifelse(X[t-1] < 0, -w*abs(X[t-1])^A, abs(X[t-1])^A) #utility for deck d on trial t; discontinuous function so we do ifelse, looks one way for positive and the other for negative values
       #if rew less than 0 then take the abs value of the rew, put it to the power of A for curve * -w for loss aversion
       
-      Ev_update[t,d] <- Ev[t-1,d] + (a * (u[t] - Ev[t-1,d])) #delta learning rule is learning rate a * prediction error
+      Ev_update[t,d] <- Ev[t-1,d] + (a * (u[t,d] - Ev[t-1,d])) #delta learning rule is learning rate a * prediction error
       #expected valence on prev trial + new info (learning rate * pred error)
       
       Ev[t,d] <- ifelse(x[t-1] == d, Ev_update[t,d], Ev[t-1,d])
