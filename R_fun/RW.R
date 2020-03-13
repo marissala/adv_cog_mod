@@ -33,7 +33,7 @@ RW <- function(payoff,ntrials,a,beta){ #a - learning rate, b - inverse heat
       
     }
     
-    #loose choice rule!
+    #Luce's choice rule!
     for (k in 1:2) {
       
       #lets calculate p

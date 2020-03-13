@@ -39,7 +39,7 @@ Run the CK model
 a <- .1
 beta <- 5 #consistency parameter, the higher the more consistent (less explorative) the agent is
 
-source("RW_CK.R")
+source("R_fun/RW_CK.R")
 
 kernel_sims <- kernel(payoff, ntrials, a, beta)
 
