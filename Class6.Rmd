@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 set.seed(1982)
 pacman::p_load(R2jags, extraDistr)
-setwd("~/Aarhus University/Advanced cog mod/progre")
+#setwd("~/Aarhus University/Advanced cog mod/progre")
 ```
 
 Generate task environment
@@ -36,10 +36,10 @@ Run the Rescola-Wagner model
 # lets call the function we wrote
 # first give it some parameters
 
-a <- .4
+a <- .2
 beta <- 1
 
-source("RW.R")
+source("R_fun/RW.R")
 
 RW_sims <- RW(payoff, ntrials, a, beta)
 
@@ -51,7 +51,7 @@ plot(X)
 ```
 
 recovering parameters with JAGS
-```{r}
+```{r, include=FALSE}
 X <- RW_sims$x
 r <- RW_sims$r
 
@@ -59,7 +59,7 @@ data <- list("X", "r", "ntrials")
 params <- c("a", "beta")
 
 samples <- jags.parallel(data, inits = NULL, params,
-                model.file = "RW.txt",
+                model.file = "jags_models/RW.txt",
                 n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
 
 a_infer <- samples$BUGSoutput$sims.list$a
@@ -93,7 +93,7 @@ for (i in 1:niterations) {
   params <- c("a", "beta")
 
   samples <- jags.parallel(data, inits = NULL, params,
-                  model.file = "RW.txt",
+                  model.file = "jags_models/RW.txt",
                   n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
   true_a[i] <- a
   true_beta[i] <- beta
@@ -107,5 +107,13 @@ for (i in 1:niterations) {
   
   print(i)
 }
+
+a_infer <- samples$BUGSoutput$sims.list$a
+beta_infer <- samples$BUGSoutput$sims.list$beta
+
+par(mfrow=c(1,1))
+plot(density(a_infer))
+plot(density(beta_infer))
+
 ```
 
