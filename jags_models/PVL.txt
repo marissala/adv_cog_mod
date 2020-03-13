@@ -21,9 +21,9 @@ model {
     
     for (d in 1:4) {
       
-      u[t,d] <- ifelse(X[t-1] < 0, -w*abs(X[t-1])^A, abs(X[t-1])^A)
+      u[t,d] <- ifelse(X[t-1] < 0, -w * abs(X[t-1])^A, abs(X[t-1])^A)
       
-      Ev_update[t,d] <- Ev[t-1,d] + (a * (u[t] - Ev[t-1,d]))
+      Ev_update[t,d] <- Ev[t-1, d] + (a * (u[t,d] - Ev[t-1,d]))
       
       Ev[t,d] <- ifelse(x[t-1] == d, Ev_update[t,d], Ev[t-1,d])
       
@@ -35,7 +35,7 @@ model {
       p[t,d] <- exp_p[t,d] / sum(exp_p[t,])
     }
     
-    x[t] ~ rcat(1,p[t,]) #we want the whole sample dist
+    x[t] ~ dcat(p[t,]) #we want the whole sample dist
     
   }
 }
