@@ -57,10 +57,10 @@ payoff <- cbind(A,B,C,D)
 
 Build the PVL-delta model
 ```{r}
-w <- 2 # Loss aversion (2 from Khaneman)
+w <- .1 # Loss aversion (2 from Khaneman)
 A <- .5 # Shape of the utility function, between 0 and 1 to have the proper shape
-theta <- 3 # Response consistency
-a <- .1 # Learning rate
+theta <- 2 # Response consistency
+a <- .01 # Learning rate
 
 ntrials <- 100
 
@@ -88,10 +88,20 @@ samples <- jags.parallel(data, inits = NULL, params,
                 n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
 
 a_infer <- samples$BUGSoutput$sims.list$a
-beta_infer <- samples$BUGSoutput$sims.list$beta
+w_infer <- samples$BUGSoutput$sims.list$w
+A_infer <- samples$BUGSoutput$sims.list$A
+theta_infer <- samples$BUGSoutput$sims.list$theta
+
+#original numbers
+w <- .1 # Loss aversion (2 from Khaneman)
+A <- .5 # Shape of the utility function, between 0 and 1 to have the proper shape
+theta <- 2 # Response consistency
+a <- .01 # Learning rate
 
 par(mfrow=c(1,1))
 plot(density(a_infer))
-plot(density(beta_infer))
+plot(density(w_infer))
+plot(density(A_infer))
+plot(density(theta_infer))
 ```
 
