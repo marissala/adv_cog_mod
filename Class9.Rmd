@@ -105,3 +105,110 @@ plot(density(A_infer))
 plot(density(theta_infer))
 ```
 
+Run parameter recovery
+```{r}
+plot(density(a_infer))
+plot(density(w_infer))
+plot(density(A_infer))
+plot(density(theta_infer))
+
+niterations <- 10
+PVL_t.a <- array(0, c(niterations))
+PVL_t.w <- array(0, c(niterations))
+PVL_t.A <- array(0, c(niterations))
+PVL_t.theta <- array(0, c(niterations))
+
+PVL_i.a <- array(0, c(niterations))
+PVL_i.w <- array(0, c(niterations))
+PVL_i.A <- array(0, c(niterations))
+PVL_i.theta <- array(0, c(niterations))
+
+##
+ntrials <- 100
+
+for (i in 1:niterations) {
+  # true parameters
+  #a <- trunc(runif(1,0,1))
+  a <- runif(1,0,1)
+  #w <- rnorm(1,0,5)
+  w <- trunc(rnorm(1,0,5))
+  A <- runif(1,0,1)
+  #A <- trunc(runif(1,0,1))
+  theta <- trunc(rnorm(1,0,5))
+  
+  #fun function and extract responses
+  source("R_fun/PVL.R")
+  PVL_sims <- PVL(payoff, ntrials, w, A, a, theta)
+  x <- PVL_sims$x
+  X <- PVL_sims$X
+  
+  data <- list("X", "x", "ntrials")
+  params <- c("w", "A", "theta", "a")
+
+  samples <- jags.parallel(data, inits = NULL, params,
+                  model.file = "jags_models/PVL.txt",
+                  n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
+  
+  PVL_t.a[i] <- a
+  PVL_t.w[i] <- w
+  PVL_t.A[i] <- A
+  PVL_t.theta[i] <- theta
+  
+  #find max posteriori
+  X <- samples$BUGSoutput$sims.list$a
+  PVL_i.a[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
+  
+  X <- samples$BUGSoutput$sims.list$w
+  PVL_i.w[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
+  
+  X <- samples$BUGSoutput$sims.list$A
+  PVL_i.A[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
+  
+  X <- samples$BUGSoutput$sims.list$theta
+  PVL_i.theta[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
+  
+  print(i)
+}
+
+plot(PVL_t.a, PVL_i.a)
+plot(PVL_t.w, PVL_i.w)
+plot(PVL_t.A, PVL_i.A)
+plot(PVL_t.theta, PVL_i.theta)
+```
+
+```{r}
+# Generate data
+ n <- 20
+ p <- 2
+ X <- rnorm(n)
+ Y <- rnorm(n,X,1)
+
+# Hyperpriors
+
+ prec_beta <- 0.01
+ a         <- 0.01
+ b         <- 0.01
+
+model_string <- "model{
+
+  # Likelihood
+  for(i in 1:n){
+    Y[i] ~ dnorm(beta[1] + X[i]*beta[2],tau)
+  }
+
+  # Prior
+  for(j in 1:p){beta[j] ~ dnorm(0, prec_beta)}
+  tau ~ dgamma(a,b)
+
+ }"
+
+ library(rjags)
+ X_miss    <- X  # Add a missing X
+ X_miss[1] <- NA
+
+ data  <- list(Y=Y,X=X_miss,p=p,n=n,prec_beta=prec_beta,a=a,b=b)
+ keep  <- c("beta","tau")
+
+ model <- jags.model(textConnection(model_string), data = data,quiet=TRUE)
+```
+
