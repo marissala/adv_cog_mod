@@ -158,10 +158,41 @@ best_kernel
 
 ```
 
+Ludvig's package for confusion matrix
+```{r}
+pacman::p_load(broom, tibble)
+library(cvms)
+
+# 0 is best model
+best_kernel
+bk = replace(best_kernel, best_kernel==1, 0)
+bk = replace(bk, bk == 2, 1)
+
+# 1 is best model
+best_RW
+brw = replace(best_RW, best_RW==2, 0)
+
+# combine
+tg = c(brw, bk)
+
+# Results in a tibble
+d_confusion <- tibble("target" = c(runif(length(best_RW),1,1), runif(length(best_kernel),0,0)),
+                      "prediction" = tg)
+
+cfm <- tidy(table(d_confusion))
+
+plot_confusion_matrix(cfm,
+                      targets_col = "target",
+                      predictions_col = "prediction",
+                      counts_col = "n")
+
+```
+
+
 Parameter recovery
 ```{r}
 #run full parameter recovery
-niterations <- 10
+niterations <- 30
 true_a <- array(0, c(niterations))
 true_beta <- array(0, c(niterations))
 
@@ -201,14 +232,20 @@ for (i in 1:niterations) {
 }
 
 plot(true_a, infer_a)
-plot(true_beta, infer_beta)
+
+source("quick_n_clean_plots.R")
+gridExtra::grid.arrange(
+  plot_actual_predicted(true_a,infer_a),
+  plot_actual_predicted(true_beta,infer_beta),
+  ncol = 2
+)
 ```
 
 ```{r}
 #full parameter recovery for kernel model
 
 #run full parameter recovery
-niterations <- 10
+niterations <- 30
 kernel_true_a <- array(0, c(niterations))
 kernel_true_beta <- array(0, c(niterations))
 
@@ -249,5 +286,12 @@ for (i in 1:niterations) {
 
 plot(kernel_true_a, kernel_infer_a)
 plot(kernel_true_beta, kernel_infer_beta)
+
+source("quick_n_clean_plots.R")
+gridExtra::grid.arrange(
+  plot_actual_predicted(kernel_true_a,kernel_infer_a),
+  plot_actual_predicted(kernel_true_beta,kernel_infer_beta),
+  ncol = 2
+)
 ```
 
