@@ -8,7 +8,8 @@
   # plot_actual_predicted(actual, predicted) # plot actual vs. predicted
 # feel free to add new plots to the mix
 # if you want to load with documentation I suggest you check klmr/modules on github
-  
+
+pacman::p_load(tidyverse, gpmisc, gganimate, ggstance)
 
 #'@title log sequence
 #'@description
