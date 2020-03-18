@@ -98,6 +98,13 @@ A <- .5 # Shape of the utility function, between 0 and 1 to have the proper shap
 theta <- 2 # Response consistency
 a <- .01 # Learning rate
 
+#-------Plot prospect theory function - code to play around with
+w <- 2
+A <- .2
+x <- seq(1,100,1) #x axis #objective value
+y <- x^A #subjective value
+plot(x,y) # Utility function
+
 par(mfrow=c(1,1))
 plot(density(a_infer))
 plot(density(w_infer))
@@ -112,7 +119,7 @@ plot(density(w_infer))
 plot(density(A_infer))
 plot(density(theta_infer))
 
-niterations <- 10
+niterations <- 30
 PVL_t.a <- array(0, c(niterations))
 PVL_t.w <- array(0, c(niterations))
 PVL_t.A <- array(0, c(niterations))
@@ -175,40 +182,3 @@ plot(PVL_t.w, PVL_i.w)
 plot(PVL_t.A, PVL_i.A)
 plot(PVL_t.theta, PVL_i.theta)
 ```
-
-```{r}
-# Generate data
- n <- 20
- p <- 2
- X <- rnorm(n)
- Y <- rnorm(n,X,1)
-
-# Hyperpriors
-
- prec_beta <- 0.01
- a         <- 0.01
- b         <- 0.01
-
-model_string <- "model{
-
-  # Likelihood
-  for(i in 1:n){
-    Y[i] ~ dnorm(beta[1] + X[i]*beta[2],tau)
-  }
-
-  # Prior
-  for(j in 1:p){beta[j] ~ dnorm(0, prec_beta)}
-  tau ~ dgamma(a,b)
-
- }"
-
- library(rjags)
- X_miss    <- X  # Add a missing X
- X_miss[1] <- NA
-
- data  <- list(Y=Y,X=X_miss,p=p,n=n,prec_beta=prec_beta,a=a,b=b)
- keep  <- c("beta","tau")
-
- model <- jags.model(textConnection(model_string), data = data,quiet=TRUE)
-```
-
