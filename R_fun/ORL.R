@@ -20,6 +20,8 @@ ORL <- function(payoff,ntrials,a_rew, a_pun, beta_f, beta_p, K, theta) {
   # Initiate x with equal chance to draw 1st card from any deck
   x[1] <- rcat(1, c(.25,.25,.25,.25))
   
+  C = 3
+  
   # Building the model
   for (t in 2:ntrials) {
     
@@ -29,16 +31,16 @@ ORL <- function(payoff,ntrials,a_rew, a_pun, beta_f, beta_p, K, theta) {
     for (d in 1:4) {
       
       # Ev_update now uses a different learning rate for wins and losses
-      Ev_update[t,d] <- ifelse(r[t] > 0, Ev[t-1,d] + (a_rew * (r[t] - Ev[t-1,d])), Ev[t-1,d] + (a_pun * (r[t] - Ev[t-1,d])))
+      Ev_update[t,d] <- ifelse(r[t] > 0, (Ev[t-1,d] + (a_rew * (r[t] - Ev[t-1,d]))), (Ev[t-1,d] + (a_pun * (r[t] - Ev[t-1,d]))))
       
       # This remains the same as in PVL-delta
       Ev[t,d] <- ifelse(x[t-1] == d, Ev_update[t,d], Ev[t-1,d])
       #if we are on the same deck as we are updating then update ev, otherwise keep last value?
       
       # Frequency, use signX instead of magnitude, also need separate to rewards and losses
-      Ef_chosen[t,d] <- ifelse(signX > 0, Ef[t-1,d] + (a_rew * (signX(r[t]) - Ef[t-1,d])), Ef[t-1,d] + (a_pun * (signX(r[t]) - Ef[t-1,d])))
+      Ef_chosen[t,d] <- ifelse(signX == 1, Ef[t-1,d] + (a_rew * (signX - Ef[t-1,d])), Ef[t-1,d] + (a_pun * (signX - Ef[t-1,d])))
       
-      Ef_not[t,d] <- ifelse(signX < 0, Ef[t-1,d] + (a_pun * ( (-signX(r[t]))/C - Ef[t-1,d])), Ef[t-1,d] + (a_rew * ((-signX(r[t]))/C - Ef[t-1,d])))
+      Ef_not[t,d] <- ifelse(signX == -1, Ef[t-1,d] + (a_pun * ( -signX/C - Ef[t-1,d])), Ef[t-1,d] + (a_rew * (-signX/C - Ef[t-1,d])))
       
       # Ef updating is similar to Ev updating
       Ef[t,d] <- ifelse(x[t-1] == d, Ef_chosen[t,d], Ef_not[t,d])
@@ -50,7 +52,7 @@ ORL <- function(payoff,ntrials,a_rew, a_pun, beta_f, beta_p, K, theta) {
       V[t,d] <- Ev[t,d] + Ef[t,d] * beta_f + PS[t,d] * beta_p
       
       # Calculate the softmax
-      exp_p[t,d] <- exp(theta * V[t,d]) # with V? or Ev or Ef?
+      exp_p[t,d] <- exp(theta * Ev[t,d]) # with V? or Ev or Ef?
       #softmax
       
     }
