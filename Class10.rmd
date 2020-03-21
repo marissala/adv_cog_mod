@@ -62,30 +62,102 @@ payoff <- cbind(A,B,C,D)
 Build the ORL model
 ```{r}
 # Learning rate for rewards
-a_rew <- .2
+a_rew <- 0.9
 # Learning rate for punishments
 a_pun <- .4
 # Weight1
 beta_f <- 10
 # Weight2
-beta_p <- -10
+beta_p <- 10
 # Decay parameter for perseverance
-K <- 2
+K <- 1
 # Softmax inverse heat
 theta <- 1
 
 ntrials <- 100
 
 source("R_fun/ORL.R")
-PVL_sims <- ORL(payoff, ntrials, a_rew, a_pun, beta_f, beta_p, K, theta)
+ORL_sims <- ORL(payoff, ntrials, a_rew, a_pun, beta_f, beta_p, K, theta)
 
 par(mfrow=c(2,2))
-plot(PVL_sims$Ev[,1])
-plot(PVL_sims$Ev[,2])
-plot(PVL_sims$Ev[,3])
-plot(PVL_sims$Ev[,4])
-```
-```{r}
+plot(ORL_sims$Ev[,1])
+plot(ORL_sims$Ev[,2])
+plot(ORL_sims$Ev[,3])
+plot(ORL_sims$Ev[,4])
 
+par(mfrow=c(2,2))
+plot(ORL_sims$Ef[,1])
+plot(ORL_sims$Ef[,2])
+plot(ORL_sims$Ef[,3])
+plot(ORL_sims$Ef[,4])
+
+par(mfrow=c(2,2))
+plot(ORL_sims$V[,1])
+plot(ORL_sims$V[,2])
+plot(ORL_sims$V[,3])
+plot(ORL_sims$V[,4])
+
+par(mfrow=c(2,2))
+plot(ORL_sims$PS[,1])
+plot(ORL_sims$PS[,2])
+plot(ORL_sims$PS[,3])
+plot(ORL_sims$PS[,4])
+
+plot(ORL_sims$r)
+plot(ORL_sims$x)
+
+
+```
+
+Fit the jags model
+```{r}
+x <- ORL_sims$x
+r <- ORL_sims$r
+
+# Learning rate for rewards
+a_rew <- 0.9
+# Learning rate for punishments
+a_pun <- .4
+# Weight1
+beta_f <- 10
+# Weight2
+beta_p <- 10
+# Decay parameter for perseverance
+K <- 1
+# Softmax inverse heat
+theta <- 1
+
+data <- list("x", "r", "ntrials")
+params <- c("a_rew", "a_pun", "beta_f", "beta_p", "K", "theta")
+
+samples <- jags.parallel(data, inits = NULL, params,
+                model.file = "jags_models/ORL.txt",
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
+
+a_rew_infer <- samples$BUGSoutput$sims.list$a_rew
+a_pun_infer <- samples$BUGSoutput$sims.list$a_pun
+beta_f_infer <- samples$BUGSoutput$sims.list$beta_f
+beta_p_infer <- samples$BUGSoutput$sims.list$beta_p
+K_infer <- samples$BUGSoutput$sims.list$K
+theta_infer <- samples$BUGSoutput$sims.list$theta
+
+#original numbers
+w <- .1 # Loss aversion (2 from Khaneman)
+A <- .5 # Shape of the utility function, between 0 and 1 to have the proper shape
+theta <- 2 # Response consistency
+a <- .01 # Learning rate
+
+#-------Plot prospect theory function - code to play around with
+w <- 2
+A <- .2
+x <- seq(1,100,1) #x axis #objective value
+y <- x^A #subjective value
+plot(x,y) # Utility function
+
+par(mfrow=c(1,1))
+plot(density(a_infer))
+plot(density(w_infer))
+plot(density(A_infer))
+plot(density(theta_infer))
 ```
 
