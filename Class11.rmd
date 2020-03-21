@@ -1,0 +1,135 @@
+---
+title: "Class11"
+author: "Maris Sala"
+date: "3/21/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is the PVL assignment done independently under corona lockdown
+
+THE VSE MODEL
+
+```{r}
+set.seed(1982)
+#setwd("~/Aarhus University/Advanced cog mod/progre")
+pacman::p_load(extraDistr, R2jags)
+```
+
+Task environment - IGT but losses and gains need to be separate (no payoff matrix)
+
+```{r}
+RA <- A
+RA[A < 0] = 100
+RB <- B
+RB[B < 0] = 100
+RC <- C
+RC[C <= 0] = 50
+RD <- D
+RD[D < 0] = 50
+
+# extract losses from reward trials
+LA <- A
+LA[A > 0] = 0
+LA[LA < 0] = -250
+LB <- B
+LB[B > 0] = 0
+LB[LB < 0] = -1250
+LC <- C
+LC[C == 0] = -50
+LC[LC > 1] = 0
+LD <- D
+LD[D > 0] = 0
+LD[LD < 0] = -250
+
+R <- cbind(RA,RB,RC,RD)
+L <- cbind(LA,LB,LC,LD)
+L <- abs(L)
+R <- R
+
+```
+
+Build the VSE model
+```{r}
+# Risk preference for utility
+r_pref <- 0.9
+# Decay rate for value learning function
+delta_rate <- .4
+# a learning rate for the sequential exploration function
+a_explore <- .2
+# a maximum/asymptote for the sequential exploration function
+max_asympt <- 1
+# Softmax inverse heat
+theta <- 1
+
+ntrials <- 100
+
+source("R_fun/VSE.R")
+VSE_sims <- VSE(L,R, ntrials, a_rew, a_pun, beta_f, beta_p, K, theta)
+
+par(mfrow=c(2,2))
+plot(ORL_sims$Ev[,1])
+plot(ORL_sims$Ev[,2])
+plot(ORL_sims$Ev[,3])
+plot(ORL_sims$Ev[,4])
+
+par(mfrow=c(2,2))
+plot(ORL_sims$Ef[,1])
+plot(ORL_sims$Ef[,2])
+plot(ORL_sims$Ef[,3])
+plot(ORL_sims$Ef[,4])
+
+par(mfrow=c(2,2))
+plot(ORL_sims$V[,1])
+plot(ORL_sims$V[,2])
+plot(ORL_sims$V[,3])
+plot(ORL_sims$V[,4])
+
+par(mfrow=c(2,2))
+plot(ORL_sims$PS[,1])
+plot(ORL_sims$PS[,2])
+plot(ORL_sims$PS[,3])
+plot(ORL_sims$PS[,4])
+
+plot(ORL_sims$r)
+plot(ORL_sims$x)
+
+
+```
+
+Run the jags model
+```{r}
+x <- VSE_sims$x
+r <- VSE_sims$r
+
+# Learning rate for rewards
+a_rew <- 0.9
+# Learning rate for punishments
+a_pun <- .4
+# Weight1
+beta_f <- 10
+# Weight2
+beta_p <- 10
+# Decay parameter for perseverance
+K <- 1
+# Softmax inverse heat
+theta <- 1
+
+data <- list("x", "r", "ntrials")
+params <- c("a_rew", "a_pun", "beta_f", "beta_p", "K", "theta")
+
+samples <- jags.parallel(data, inits = NULL, params,
+                model.file = "jags_models/VSE.txt",
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
+
+a_rew_infer <- samples$BUGSoutput$sims.list$a_rew
+a_pun_infer <- samples$BUGSoutput$sims.list$a_pun
+beta_f_infer <- samples$BUGSoutput$sims.list$beta_f
+beta_p_infer <- samples$BUGSoutput$sims.list$beta_p
+K_infer <- samples$BUGSoutput$sims.list$K
+theta_infer <- samples$BUGSoutput$sims.list$theta
+```
+
