@@ -1,0 +1,43 @@
+model {
+
+  #specify priors
+  r_pref ~ dnorm(0,1)T(0,1)
+  delta_rate ~ dnorm(0,1)T(0,1)
+  a_explore ~ dnorm(0,1)T(0,1)
+  phi ~ dnorm(0,1)
+  theta ~ dnorm(0,1)T(0,1)
+  
+  # gut feelings on 1st trial
+  p[1, 1:4] <- c(0.25, 0.25, 0.25, 0.25)
+  exploit[1, 1:4] <- c(1, 1, 1, 1)
+  explore[1, 1:4] <- c(1, 1, 1, 1)
+  #v[1, 1:4] <- c(1, 1, 1, 1)
+  
+  # Building the model
+  for (t in 2:ntrials) {
+    
+    # Value function
+    v[t-1] <- r[t-1]^r_pref - l[t-1]^r_pref
+    
+    for (d in 1:4) {
+      
+      # Start with exploit variable for chosen and unchosen decks (decay rule)
+      exploit[t,d] <- ifelse(x[t-1] == d, exploit[t-1,d]*delta_rate + v[t-1], exploit[t-1,d]*delta_rate)
+      
+      # Explore variable for chosen and unchosen decks
+      explore[t,d] <- ifelse(x[t-1] == d, 0, explore[t-1,d] + a_explore * (phi - explore[t-1,d]))
+      
+      exp_p[t,d] <- exp(theta * (exploit[t,d] + explore[t,d]))
+      #softmax
+      
+    }
+    
+    for (d in 1:4) {
+      p[t,d] <- exp_p[t,d] / sum(exp_p[t,])
+    }
+    
+    x[t] ~ dcat(p[t,]) #sample
+    
+  }
+  
+}
