@@ -54,82 +54,160 @@ R <- R
 
 Build the VSE model
 ```{r}
-# Risk preference for utility
-r_pref <- 0.9
-# Decay rate for value learning function
-delta_rate <- .4
-# a learning rate for the sequential exploration function
+# Risk preference for utility (0-1)
+r_pref <- 0.2
+# Decay rate for value learning function (0-1)
+delta_rate <- .9
+# a learning rate for the sequential exploration function (0-1)
 a_explore <- .2
-# a maximum/asymptote for the sequential exploration function
-max_asympt <- 1
+# a maximum/asymptote for the sequential exploration function (no bound)
+phi <- 2
 # Softmax inverse heat
-theta <- 1
+theta <- 0.5
 
 ntrials <- 100
 
 source("R_fun/VSE.R")
-VSE_sims <- VSE(L,R, ntrials, a_rew, a_pun, beta_f, beta_p, K, theta)
+VSE_sims <- VSE(L,R, ntrials, r_pref, delta_rate, a_explore, phi, theta)
 
 par(mfrow=c(2,2))
-plot(ORL_sims$Ev[,1])
-plot(ORL_sims$Ev[,2])
-plot(ORL_sims$Ev[,3])
-plot(ORL_sims$Ev[,4])
+plot(VSE_sims$explore[,1])
+plot(VSE_sims$explore[,2])
+plot(VSE_sims$explore[,3])
+plot(VSE_sims$explore[,4])
 
 par(mfrow=c(2,2))
-plot(ORL_sims$Ef[,1])
-plot(ORL_sims$Ef[,2])
-plot(ORL_sims$Ef[,3])
-plot(ORL_sims$Ef[,4])
+plot(VSE_sims$exploit[,1])
+plot(VSE_sims$exploit[,2])
+plot(VSE_sims$exploit[,3])
+plot(VSE_sims$exploit[,4])
 
-par(mfrow=c(2,2))
-plot(ORL_sims$V[,1])
-plot(ORL_sims$V[,2])
-plot(ORL_sims$V[,3])
-plot(ORL_sims$V[,4])
-
-par(mfrow=c(2,2))
-plot(ORL_sims$PS[,1])
-plot(ORL_sims$PS[,2])
-plot(ORL_sims$PS[,3])
-plot(ORL_sims$PS[,4])
-
-plot(ORL_sims$r)
-plot(ORL_sims$x)
-
-
+#plot(VSE_sims$r)
+plot(VSE_sims$x)
+plot(VSE_sims$r)
+plot(VSE_sims$l)
 ```
 
 Run the jags model
 ```{r}
 x <- VSE_sims$x
 r <- VSE_sims$r
+l <- VSE_sims$l
 
-# Learning rate for rewards
-a_rew <- 0.9
-# Learning rate for punishments
-a_pun <- .4
-# Weight1
-beta_f <- 10
-# Weight2
-beta_p <- 10
-# Decay parameter for perseverance
-K <- 1
+# Risk preference for utility (0-1)
+r_pref <- 0.2
+# Decay rate for value learning function (0-1)
+delta_rate <- .9
+# a learning rate for the sequential exploration function (0-1)
+a_explore <- .2
+# a maximum/asymptote for the sequential exploration function (no bound)
+phi <- 2
 # Softmax inverse heat
-theta <- 1
+theta <- 0.5
 
-data <- list("x", "r", "ntrials")
-params <- c("a_rew", "a_pun", "beta_f", "beta_p", "K", "theta")
+ntrials <- 100
+
+data <- list("x", "r", "l", "ntrials")
+params <- c("r_pref", "delta_rate", "a_explore", "phi", "theta")
 
 samples <- jags.parallel(data, inits = NULL, params,
                 model.file = "jags_models/VSE.txt",
                 n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
 
-a_rew_infer <- samples$BUGSoutput$sims.list$a_rew
-a_pun_infer <- samples$BUGSoutput$sims.list$a_pun
-beta_f_infer <- samples$BUGSoutput$sims.list$beta_f
-beta_p_infer <- samples$BUGSoutput$sims.list$beta_p
-K_infer <- samples$BUGSoutput$sims.list$K
+r_pref_infer <- samples$BUGSoutput$sims.list$r_pref
+delta_rate_infer <- samples$BUGSoutput$sims.list$delta_rate
+a_explore_infer <- samples$BUGSoutput$sims.list$a_explore
+phi_infer <- samples$BUGSoutput$sims.list$phi
 theta_infer <- samples$BUGSoutput$sims.list$theta
+
+par(mfrow=c(3,3))
+plot(density(r_pref_infer))
+plot(density(delta_rate_infer))
+plot(density(a_explore_infer))
+plot(density(phi_infer))
+plot(density(theta_infer))
+
+```
+
+Parameter recovery
+```{r}
+niterations <- 30
+VSE_t.rp <- array(0, c(niterations))
+VSE_t.dr <- array(0, c(niterations))
+VSE_t.a <- array(0, c(niterations))
+VSE_t.phi <- array(0, c(niterations))
+VSE_t.theta <- array(0, c(niterations))
+
+VSE_i.rp <- array(0, c(niterations))
+VSE_i.dr <- array(0, c(niterations))
+VSE_i.a <- array(0, c(niterations))
+VSE_i.phi <- array(0, c(niterations))
+VSE_i.theta <- array(0, c(niterations))
+
+##
+ntrials <- 100
+
+for (i in 1:niterations) {
+  # true parameters
+  r_pref <- runif(1,0,1)
+  delta_rate <- runif(1,0,1)
+  a_explore <- runif(1,0,1)
+  phi <- rnorm(1,0,5) # this shouldnt have bounds whats up
+  theta <- runif(1,0,1)
+  
+  #run function and extract responses
+  source("R_fun/VSE.R")
+  VSE_sims <- VSE(L,R, ntrials, r_pref, delta_rate, a_explore, phi, theta)
+  x <- VSE_sims$x
+  r <- VSE_sims$r
+  l <- VSE_sims$l
+  
+  data <- list("x", "r", "l", "ntrials")
+  params <- c("r_pref", "delta_rate", "a_explore", "phi", "theta")
+
+  samples <- jags.parallel(data, inits = NULL, params,
+                  model.file = "jags_models/VSE.txt",
+                  n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
+  
+  VSE_t.rp[i] <- r_pref
+  VSE_t.dr[i] <- delta_rate
+  VSE_t.a[i] <- a_explore
+  VSE_t.phi[i] <- phi
+  VSE_t.theta[i] <- theta
+  
+  #find max posteriori
+  X <- samples$BUGSoutput$sims.list$r_pref
+  VSE_i.rp[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
+  
+  X <- samples$BUGSoutput$sims.list$delta_rate
+  VSE_i.dr[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
+  
+  X <- samples$BUGSoutput$sims.list$a_explore
+  VSE_i.a[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
+  
+  X <- samples$BUGSoutput$sims.list$phi
+  VSE_i.phi[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
+  
+  X <- samples$BUGSoutput$sims.list$theta
+  VSE_i.theta[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
+  
+  print(i)
+}
+
+plot(VSE_t.rp, VSE_i.rp)
+plot(VSE_t.dr, VSE_i.dr)
+plot(VSE_t.a, VSE_i.a)
+plot(VSE_t.phi, VSE_i.phi)
+plot(VSE_t.theta, VSE_i.theta)
+
+source("quick_n_clean_plots.R")
+gridExtra::grid.arrange(
+  plot_actual_predicted(VSE_t.rp, VSE_i.rp),
+  plot_actual_predicted(VSE_t.dr, VSE_i.dr),
+  plot_actual_predicted(VSE_t.a, VSE_i.a),
+  plot_actual_predicted(VSE_t.phi, VSE_i.phi),
+  plot_actual_predicted(VSE_t.theta, VSE_i.theta),
+  ncol = 2
+)
 ```
 
