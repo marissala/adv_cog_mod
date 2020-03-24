@@ -1,8 +1,9 @@
-VSE <- function(L,R, ntrials, a_rew, a_pun, beta_f, beta_p, K, theta) {
+VSE <- function(L,R, ntrials, r_pref, delta_rate, a_explore, phi, theta) {
   
   # Arrays to populate
   x <- array(0, c(ntrials)) #choice
   r <- array(0, c(ntrials)) #reward
+  l <- array(0, c(ntrials)) #losses
   v <- array(0, c(ntrials,4)) #utility
   
   # Exploit variable
@@ -14,22 +15,19 @@ VSE <- function(L,R, ntrials, a_rew, a_pun, beta_f, beta_p, K, theta) {
   
   # Initiate x with equal chance to draw 1st card from any deck
   x[1] <- rcat(1, c(.25,.25,.25,.25))
+  r[1] <- R[1, x[1]]
+  l[1] <- L[1, x[1]]
   
   # Building the model
   for (t in 2:ntrials) {
     
-    # NEEDS A VALUE FUNCTION HERE
-    #v[t] <- gain(t)^theta - loss(t)^theta
-    
-    
-    #u[t,d] <- ifelse(X[t-1] < 0, -w*abs(X[t-1])^A, abs(X[t-1])^A) #utility for deck d on trial t; discontinuous function so we do ifelse, looks one way for positive and the other for negative values
-    #if rew less than 0 then take the abs value of the rew, put it to the power of A for curve * -w for loss aversion
-    
+    # Value function
+    v[t-1] <- R[t-1]^r_pref - L[t-1]^r_pref
     
     for (d in 1:4) {
       
       # Start with exploit variable for chosen and unchosen decks (decay rule)
-      exploit[t,d] <- ifelse(x[t-1] == d, exploit[t-1,d]*delta_rate + v[t,d], exploit[t-1,d]*delta_rate)
+      exploit[t,d] <- ifelse(x[t-1] == d, exploit[t-1,d]*delta_rate + v[t-1], exploit[t-1,d]*delta_rate)
       
       # Explore variable for chosen and unchosen decks
       explore[t,d] <- ifelse(x[t-1] == d, 0, explore[t-1,d] + a_explore * (phi - explore[t-1,d]))
@@ -46,12 +44,13 @@ VSE <- function(L,R, ntrials, a_rew, a_pun, beta_f, beta_p, K, theta) {
     x[t] <- rcat(1,p[t,]) #sample
     
     #solve this for R and L
-    r[t] <- payoff[t,x[t]] #value
+    r[t] <- R[t,x[t]] #value
+    l[t] <- R[t,x[t]]
     
   }
   
   #change this
-  result <- list(x=x, X=X, Ev=Ev)
+  result <- list(x=x, r=r, l=l, explore=explore, exploit=exploit)
   return(result)
   
 }
