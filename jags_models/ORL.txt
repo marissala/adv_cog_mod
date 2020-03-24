@@ -1,6 +1,6 @@
 model {
 
-  #random priors
+  #priors
   a_rew ~ dnorm(0,1)T(0,1)
   a_pun ~ dnorm(0,1)T(0,1) #both at the bottom and at the top - almost uniform; they can't be risk seeking for gains, and risk averse for losses (assuming prospect theory)
   beta_f ~ dnorm(0,1)
