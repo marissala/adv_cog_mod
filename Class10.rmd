@@ -159,3 +159,81 @@ plot(density(theta_infer))
 ```
 
 Parameter recovery
+```{r}
+niterations <- 5 #30 later
+ORL_t.a_rew <- array(0, c(niterations))
+ORL_t.a_pun <- array(0, c(niterations))
+ORL_t.beta_f <- array(0, c(niterations))
+ORL_t.beta_p <- array(0, c(niterations))
+ORL_t.K <- array(0, c(niterations))
+ORL_t.theta <- array(0, c(niterations))
+
+ORL_i.a_rew <- array(0, c(niterations))
+ORL_i.a_pun <- array(0, c(niterations))
+ORL_i.beta_f <- array(0, c(niterations))
+ORL_i.beta_p <- array(0, c(niterations))
+ORL_i.K <- array(0, c(niterations))
+ORL_i.theta <- array(0, c(niterations))
+
+##
+ntrials <- 100
+
+for (i in 1:niterations) {
+  # true parameters
+  a_rew <- runif(1,0,1)
+  a_pun <- runif(1,0,1)
+  beta_f <- rnorm(1,0,5) #not sure here
+  beta_p <- rnorm(1,0,5) #not sure here
+  K <- runif(1,0,1)
+  theta <- runif(1,0,1)
+  
+  #run function and extract responses
+  source("R_fun/ORL.R")
+  ORL_sims <- ORL(payoff,ntrials,a_rew, a_pun, beta_f, beta_p, K, theta)
+  x <- ORL_sims$x
+  r <- ORL_sims$r
+  
+  data <- list("x", "r", "ntrials")
+  params <- c("a_rew", "a_pun", "beta_f", "beta_p", "K", "theta")
+
+  samples <- jags.parallel(data, inits = NULL, params,
+                  model.file = "jags_models/ORL.txt",
+                  n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
+  
+  ORL_t.a_rew[i] <- a_rew
+  ORL_t.a_pun[i] <- a_pun
+  ORL_t.beta_f[i] <- beta_f
+  ORL_t.beta_p[i] <- beta_p
+  ORL_t.K[i] <- K
+  ORL_t.theta[i] <- theta
+  
+  #find max posteriori
+  X <- samples$BUGSoutput$sims.list$a_rew
+  ORL_i.a_rew[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
+  
+  X <- samples$BUGSoutput$sims.list$a_pun
+  ORL_i.a_pun[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
+  
+  X <- samples$BUGSoutput$sims.list$beta_f
+  ORL_i.beta_f[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
+  
+  X <- samples$BUGSoutput$sims.list$beta_p
+  ORL_i.beta_p[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
+  
+  X <- samples$BUGSoutput$sims.list$K
+  ORL_i.K[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
+  
+  X <- samples$BUGSoutput$sims.list$theta
+  ORL_i.theta[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
+  
+  print(i)
+}
+
+plot(ORL_t.a_rew, ORL_i.a_rew)
+plot(ORL_t.a_pun, ORL_i.a_pun)
+plot(ORL_t.beta_f, ORL_i.beta_f)
+plot(ORL_t.beta_p, ORL_i.beta_p)
+plot(ORL_t.K, ORL_i.K)
+plot(ORL_t.theta, ORL_i.theta)
+```
+
