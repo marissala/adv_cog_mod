@@ -8,23 +8,56 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+This is the IGT task with actual data instead of simulated one. Posterior predictive checks of descriptive adequacy
 
-## R Markdown
+Setup
+```{r}
+set.seed(1982)
+#setwd("~/Aarhus University/Advanced cog mod/progre")
+pacman::p_load(extraDistr, R2jags)
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+# load control data
+ctr_data <- read.table("rawData/IGTdata_healthy_control.txt", header=T)
 ```
 
-## Including Plots
+Prepare the data for the JAGS model
+Turning it into a matrix
+```{r}
+# Identify and count unique subject IDs
+subIDs <- unique(ctr_data$subjID)
+nsubs <- length(subIDs)
+ntrials_max <- 100
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+# All choices (x) and outcomes (X)
+x_raw <- ctr_data$deck
+X_raw <- ctr_data$gain + ctr_data$loss
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Assign choices and outcomes in trial x sub matrix
+Different number of trials across subjects. We'll need to fix this by padding arrays of < 100. Then we'll also need to record number of valid trials for each sub, then run the JAGS model on only valid trials!
+```{r}
+# Empty arrays to fill
+ntrials_all <- array(0, c(nsubs))
+x_all <- array(0, c(nsubs, ntrials_max))
+X_all <- array(0, c(nsubs, ntrials_max))
+
+# Fill the arrays! Loop over subjects
+for (s in 1:nsubs) {
+  #record n trials for subject s. Count number of trials for subject
+  ntrials_all[s] <- length(x_raw[ctr_data$subjID==subIDs[s]])
+  
+  #pad trials with NA if n trials < maximum (i e 100)
+  x_sub <- x_raw[ctr_data$subjID==subIDs[s]]
+  length(x_sub) <- ntrials_max
+  
+  X_sub <- X_raw[ctr_data$subjID==subIDs[s]]
+  length(X_sub) <- ntrials_max
+  #^temporary data for subject s, padded with NA where there are no trials, the NA's do NOT get into JAGS!
+  
+  #assign arrays
+  x_all[s,] <- x_sub
+  X_all[s,] <- X_sub
+}
+```
+
+Applying the model to data
