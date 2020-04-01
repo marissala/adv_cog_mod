@@ -102,5 +102,22 @@ x[32]
 
 # Model guesses 3, actual choice is 3
 ```
+
 The model won't always get this right. Relevant questions: How often? Above chance? Better than other models?
+```{r}
+# Let's write a loop to find out!
+x_predict <- array(c(ntrials))
+for (t in 1:ntrials) {
+  p_predict <- c(
+    density(p_post[,t,1])$x[which(density(p_post[,t,1])$y==max(density(p_post[,t,1])$y))],
+    density(p_post[,t,2])$x[which(density(p_post[,t,2])$y==max(density(p_post[,t,2])$y))],
+    density(p_post[,t,3])$x[which(density(p_post[,t,3])$y==max(density(p_post[,t,3])$y))],
+    density(p_post[,t,4])$x[which(density(p_post[,t,4])$y==max(density(p_post[,t,4])$y))])
+  
+  x_predict[t] <- which.max(p_predict)
+}
+
+# How many correct out of 100 trials for this participant:
+sum(x_predict==x)
+```
 
