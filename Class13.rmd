@@ -61,3 +61,19 @@ for (s in 1:nsubs) {
 ```
 
 Applying the model to data
+```{r}
+x <- x_all[1,]
+X <- X_all[1,]
+
+ntrials <- ntrials_all[1]
+
+# Set up jags and run jags model on one subject
+data <- list("x", "X", "ntrials")
+params <- c("w", "A", "theta", "a", "p")
+samples <- jags.parallel(data, inits = NULL, params,
+                model.file = "jags_models/PVL.txt",
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
+
+summary(samples)
+```
+
