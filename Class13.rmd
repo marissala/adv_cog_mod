@@ -121,3 +121,51 @@ for (t in 1:ntrials) {
 sum(x_predict==x)
 ```
 
+Finding how well the model performs on all the subjects
+```{r}
+pred_success <- array(c(nsubs))
+for (s in 1:nsubs) {
+  
+  # fit jags model
+  x <- x_all[s,]
+  X <- X_all[s,]
+  
+  ntrials <- ntrials_all[s]
+  
+  # Set up jags and run jags model on one subject
+  data <- list("x", "X", "ntrials")
+  params <- c("w", "A", "theta", "a", "p")
+  samples <- jags.parallel(data, inits = NULL, params,
+                           model.file = "jags_models/PVL.txt",
+                           n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1) #n.thin = 3, n.iter = 10000, decorrelates the chains
+  
+  p_post <- samples$BUGSoutput$sims.list$p
+  
+  x_predict <- array(c(ntrials))
+  for (t in 1:ntrials) {
+    p_predict <- c(
+      density(p_post[,t,1])$x[which(density(p_post[,t,1])$y==max(density(p_post[,t,1])$y))],
+      density(p_post[,t,2])$x[which(density(p_post[,t,2])$y==max(density(p_post[,t,2])$y))],
+      density(p_post[,t,3])$x[which(density(p_post[,t,3])$y==max(density(p_post[,t,3])$y))],
+      density(p_post[,t,4])$x[which(density(p_post[,t,4])$y==max(density(p_post[,t,4])$y))])
+    
+    x_predict[t] <- which.max(p_predict)
+  }
+  
+  # How many correct out of 100 trials for each participant:
+  pred_success[s] <- sum(x_predict==x, na.rm=T)
+  print(s)
+}
+```
+
+Visualize predicted success
+```{r}
+#write.csv(pred_success, "predicted_success.csv", row.names = F)
+
+pred_success = read.csv("predicted_success.csv")
+library(ggplot2)
+
+ggplot(pred_success, aes(x)) +
+  geom_density()
+```
+
