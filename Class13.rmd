@@ -62,6 +62,7 @@ for (s in 1:nsubs) {
 
 Applying the model to data
 ```{r}
+#Testing on one subject whether this works
 x <- x_all[1,]
 X <- X_all[1,]
 
@@ -73,7 +74,33 @@ params <- c("w", "A", "theta", "a", "p")
 samples <- jags.parallel(data, inits = NULL, params,
                 model.file = "jags_models/PVL.txt",
                 n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
+##NOTE: turn off truncation in the JAGS file for A (violates prospect theory but necessary for this to run) - runs fine for me
 
-summary(samples)
+# Checking the posteriors
+par(mfrow=c(2,2))
+plot(density(samples$BUGSoutput$sims.list$w))
+plot(density(samples$BUGSoutput$sims.list$A))
+plot(density(samples$BUGSoutput$sims.list$theta))
+plot(density(samples$BUGSoutput$sims.list$a))
 ```
+
+Posterior prediction. How reliable is what we say about the world in the previous posteriors?
+Q: How would you expect the data to look on the basis of these posteriors?
+```{r}
+# Posterior prediction - start by looking at posteriors for p parameter
+p_post <- samples$BUGSoutput$sims.list$p #the output of the softmax
+
+#plot probability of each deck on trial 32
+par(mfrow=c(2,2))
+plot(density(p_post[,32,1]))
+plot(density(p_post[,32,2]))
+plot(density(p_post[,32,3]))
+plot(density(p_post[,32,4]))
+
+# which option will be chosen?
+x[32]
+
+# Model guesses 3, actual choice is 3
+```
+The model won't always get this right. Relevant questions: How often? Above chance? Better than other models?
 
