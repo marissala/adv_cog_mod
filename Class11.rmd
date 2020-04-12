@@ -131,7 +131,7 @@ plot(density(theta_infer))
 
 Parameter recovery
 ```{r}
-niterations <- 30
+niterations <- 50
 VSE_t.rp <- array(0, c(niterations))
 VSE_t.dr <- array(0, c(niterations))
 VSE_t.a <- array(0, c(niterations))
@@ -191,8 +191,10 @@ for (i in 1:niterations) {
   X <- samples$BUGSoutput$sims.list$theta
   VSE_i.theta[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
   
-  print(i)
+  print(i); beepr::beep(sound=1)
 }
+
+beepr::beep(sound=3)
 
 plot(VSE_t.rp, VSE_i.rp)
 plot(VSE_t.dr, VSE_i.dr)
@@ -201,13 +203,12 @@ plot(VSE_t.phi, VSE_i.phi)
 plot(VSE_t.theta, VSE_i.theta)
 
 source("quick_n_clean_plots.R")
-gridExtra::grid.arrange(
-  plot_actual_predicted(VSE_t.rp, VSE_i.rp),
-  plot_actual_predicted(VSE_t.dr, VSE_i.dr),
-  plot_actual_predicted(VSE_t.a, VSE_i.a),
-  plot_actual_predicted(VSE_t.phi, VSE_i.phi),
-  plot_actual_predicted(VSE_t.theta, VSE_i.theta),
-  ncol = 2
-)
+plot_actual_predicted(VSE_t.rp, VSE_i.rp)
+plot_actual_predicted(VSE_t.dr, VSE_i.dr)
+plot_actual_predicted(VSE_t.a, VSE_i.a)
+plot_actual_predicted(VSE_t.phi, VSE_i.phi)
+plot_actual_predicted(VSE_t.theta, VSE_i.theta)
+beepr::beep(sound=9)
+
 ```
 
