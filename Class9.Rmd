@@ -58,7 +58,7 @@ payoff <- cbind(A,B,C,D)
 Build the PVL-delta model
 ```{r}
 w <- 2 # Loss aversion (2 from Khaneman)
-A <- .5 # Shape of the utility function, between 0 and 1 to have the proper shape
+A <- 5#.5 # Shape of the utility function, between 0 and 1 to have the proper shape
 theta <- 2 # Response consistency
 a <- .01 # Learning rate
 
@@ -117,7 +117,7 @@ Run parameter recovery
 #plot(density(A_infer))
 #plot(density(theta_infer))
 
-niterations <- 30
+niterations <- 50
 PVL_t.a <- array(0, c(niterations))
 PVL_t.w <- array(0, c(niterations))
 PVL_t.A <- array(0, c(niterations))
@@ -133,13 +133,16 @@ ntrials <- 100
 
 for (i in 1:niterations) {
   # true parameters
-  #a <- trunc(runif(1,0,1))
-  a <- runif(1,0,1)
-  #w <- rnorm(1,0,5)
-  w <- trunc(rnorm(1,0,5))
-  A <- runif(1,0,1)
-  #A <- trunc(runif(1,0,1))
-  theta <- trunc(rnorm(1,0,5))
+  a <- rtnorm(1,0,1, a=0,b=1)
+  w <- dhcauchy(0,1,0)
+  A <- rhcauchy(1,0.25)
+  theta <- rtnorm(1,0,1, a = 0)
+  
+  # setting priors 
+  #w ~ dt(0, 0.25, 1)T(0,) # half cauchy with a precision of 0.25 (mean 0, 1 means cauchy as opposed to student's t)
+  #A ~ dt(0, 0.25, 1)T(0,)
+  #theta ~ dnorm(0,1)T(0,)
+  #a ~ dnorm(0,1)T(0,1)
   
   #run function and extract responses
   source("R_fun/PVL.R")
@@ -172,11 +175,22 @@ for (i in 1:niterations) {
   X <- samples$BUGSoutput$sims.list$theta
   PVL_i.theta[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
   
-  print(i)
+  print(i);beepr::beep(sound=1)
 }
+
+beepr::beep(sound=3)
 
 plot(PVL_t.a, PVL_i.a)
 plot(PVL_t.w, PVL_i.w)
 plot(PVL_t.A, PVL_i.A)
 plot(PVL_t.theta, PVL_i.theta)
+
+source("quick_n_clean_plots.R")
+gridExtra::grid.arrange(
+  plot_actual_predicted(PVL_t.a, PVL_i.a),
+  plot_actual_predicted(PVL_t.w, PVL_i.w),
+  plot_actual_predicted(PVL_t.A, PVL_i.A),
+  plot_actual_predicted(PVL_t.theta, PVL_i.theta),
+  ncol = 2
+)
 ```
