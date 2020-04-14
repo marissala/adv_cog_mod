@@ -58,7 +58,7 @@ payoff <- cbind(A,B,C,D)
 Build the PVL-delta model
 ```{r}
 w <- 2 # Loss aversion (2 from Khaneman)
-A <- 5#.5 # Shape of the utility function, between 0 and 1 to have the proper shape
+A <- 0.5 #.5 # Shape of the utility function, between 0 and 1 to have the proper shape
 theta <- 2 # Response consistency
 a <- .01 # Learning rate
 
@@ -103,7 +103,7 @@ x <- seq(1,100,1) #x axis #objective value
 y <- x^A #subjective value
 plot(x,y) # Utility function
 
-par(mfrow=c(1,1))
+par(mfrow=c(2,2))
 plot(density(a_infer))
 plot(density(w_infer))
 plot(density(A_infer))
@@ -134,8 +134,9 @@ ntrials <- 100
 for (i in 1:niterations) {
   # true parameters
   a <- rtnorm(1,0,1, a=0,b=1)
-  w <- dhcauchy(0,1,0)
-  A <- rhcauchy(1,0.25)
+  w <- rhcauchy(0,1,0)
+  #A <- rhcauchy(1,0.25)
+  A <- rtnorm(1,0,1, a=0,b=1)
   theta <- rtnorm(1,0,1, a = 0)
   
   # setting priors 
@@ -193,4 +194,20 @@ gridExtra::grid.arrange(
   plot_actual_predicted(PVL_t.theta, PVL_i.theta),
   ncol = 2
 )
+
+par(mfrow=c(2,1))
+plot(density(PVL_t.A))
+plot(density(PVL_i.A))
+
+par(mfrow=c(2,1))
+plot(density(PVL_t.a))
+plot(density(PVL_i.a))
+
+par(mfrow=c(2,1))
+plot(density(PVL_t.w))
+plot(density(PVL_i.w))
+
+par(mfrow=c(2,1))
+plot(density(PVL_t.theta))
+plot(density(PVL_i.theta))
 ```
