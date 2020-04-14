@@ -35,6 +35,9 @@ model {
       
       exp_p[t,d] <- exp(theta * Ev[t,d])
       
+      # FIX: IN CASE THE ^A IS APPROACHING INFINITY
+      if(is.infinite(exp_p[t,d])){exp_p[t,d] = exp(500)}
+      
       }
     
     for (d in 1:4) {
