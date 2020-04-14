@@ -182,9 +182,10 @@ for (i in 1:niterations) {
   # true parameters
   a_rew <- runif(1,0,1)
   a_pun <- runif(1,0,1)
-  beta_f <- rnorm(1,0,5) #not sure here
-  beta_p <- rnorm(1,0,5) #not sure here
-  K <- runif(1,0,1)
+  beta_f <- rnorm(1,0,1) #should be right now
+  beta_p <- rnorm(1,0,1) #should be right now
+  #K <- runif(1,0,1) #incorrect
+  K <- rtnorm(1,0,1, a = 0) #should be correct
   theta <- runif(1,0,1)
   
   #run function and extract responses
@@ -248,5 +249,28 @@ gridExtra::grid.arrange(
   ncol = 2
 );beepr::beep(sound=3)
 
+par(mfrow=c(2,1))
+plot(density(ORL_t.a_rew))
+plot(density(ORL_i.a_rew))
+
+par(mfrow=c(2,1))
+plot(density(ORL_t.a_pun))
+plot(density(ORL_i.a_pun))
+
+par(mfrow=c(2,1))
+plot(density(ORL_t.beta_f))
+plot(density(ORL_i.beta_f))
+
+par(mfrow=c(2,1))
+plot(density(ORL_t.beta_p))
+plot(density(ORL_i.beta_p))
+
+par(mfrow=c(2,1))
+plot(density(ORL_t.K))
+plot(density(ORL_i.K))
+
+par(mfrow=c(2,1))
+plot(density(ORL_t.theta))
+plot(density(ORL_i.theta))
 ```
 Did not save results because have to run them again with correct beta values!!
