@@ -210,5 +210,25 @@ plot_actual_predicted(VSE_t.phi, VSE_i.phi)
 plot_actual_predicted(VSE_t.theta, VSE_i.theta)
 beepr::beep(sound=9)
 
+par(mfrow=c(2,1))
+plot(density(VSE_t.rp))
+plot(density(VSE_i.rp))
+
+par(mfrow=c(2,1))
+plot(density(VSE_t.dr))
+plot(density(VSE_i.dr))
+
+par(mfrow=c(2,1))
+plot(density(VSE_t.a))
+plot(density(VSE_i.a))
+
+par(mfrow=c(2,1))
+plot(density(VSE_t.phi))
+plot(density(VSE_i.phi))
+
+par(mfrow=c(2,1))
+plot(density(VSE_t.theta))
+plot(density(VSE_i.theta))
+
 ```
 
