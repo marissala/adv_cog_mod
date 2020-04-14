@@ -169,3 +169,21 @@ ggplot(pred_success, aes(x)) +
   geom_density()
 ```
 
+RUNNING THE HIERARCHICAL MODEL
+```{r}
+#ohlawd
+
+x <- x_all
+X <- X_all
+
+#set up jags and run it
+data <- list("x", "X", "ntrials", "nsubs")
+params <- c("mu_w","mu_A","mu_theta","mu_a","lambda_w","lambda_A","lambda_theta","lambda_a")
+
+samples <- jags.parallel(data, inits = NULL, params,
+                model.file = "jags_models/hPVL.txt",
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
+
+beepr::beep(sound=9)
+```
+
