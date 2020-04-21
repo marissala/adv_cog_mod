@@ -165,8 +165,10 @@ Visualize predicted success
 pred_success = read.csv("predicted_success.csv")
 library(ggplot2)
 
-ggplot(pred_success, aes(x)) +
+PVL = ggplot(pred_success, aes(x)) +
   geom_density()
+
+median(pred_success$x)
 ```
 
 Predicted success for ORL
@@ -207,6 +209,19 @@ for (s in 1:nsubs) {
 
 write.csv(pred_success, "predicted_success_ORL.csv", row.names = F)
 ```
+
+Visualizing the scores
+```{r}
+pred_success = read.csv("predicted_success_ORL.csv")
+library(ggplot2)
+
+ORL = ggplot(pred_success, aes(x)) +
+  geom_density()
+
+median(pred_success$x)
+```
+
+
 
 
 
@@ -288,28 +303,19 @@ for (s in 1:nsubs) {
 write.csv(pred_success, "predicted_success_VSE.csv", row.names = F)
 ```
 
+Visualizing results
 
-
-
-
-
-
-
-
-RUNNING THE HIERARCHICAL MODEL
 ```{r}
-#ohlawd
-x <- x_all
-X <- X_all
+pred_success = read.csv("predicted_success_VSE.csv")
+library(ggplot2)
 
-#set up jags and run it
-data <- list("x", "X", "ntrials", "nsubs")
-params <- c("mu_w","mu_A","mu_theta","mu_a","lambda_w","lambda_A","lambda_theta","lambda_a")
-
-samples <- jags.parallel(data, inits = NULL, params,
-                model.file = "jags_models/hPVL.txt",
-                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1);beepr::beep(sound=9)
+VSE = ggplot(pred_success, aes(x)) +
+  geom_density()
 
 
+gridExtra::grid.arrange(PVL,ORL,VSE)
+
+median(pred_success$x)
 ```
+
 
