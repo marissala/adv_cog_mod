@@ -211,18 +211,58 @@ write.csv(pred_success, "predicted_success_ORL.csv", row.names = F)
 
 
 Posterior predictive checks for VSE
+
+Losses and gains separate for VSE
+```{r}
+# All choices (x) and outcomes (X)
+x_raw <- ctr_data$deck
+g_raw <- ctr_data$gain
+l_raw <- ctr_data$loss
+
+# Empty arrays to fill
+ntrials_all <- array(0, c(nsubs))
+x_all <- array(0, c(nsubs, ntrials_max))
+g_all <- array(0, c(nsubs, ntrials_max))
+l_all <- array(0, c(nsubs, ntrials_max))
+
+# Fill the arrays! Loop over subjects
+for (s in 1:nsubs) {
+  #record n trials for subject s. Count number of trials for subject
+  ntrials_all[s] <- length(x_raw[ctr_data$subjID==subIDs[s]])
+  
+  #pad trials with NA if n trials < maximum (i e 100)
+  x_sub <- x_raw[ctr_data$subjID==subIDs[s]]
+  length(x_sub) <- ntrials_max
+  
+  g_sub <- g_raw[ctr_data$subjID==subIDs[s]]
+  length(g_sub) <- ntrials_max
+  #^temporary data for subject s, padded with NA where there are no trials, the NA's do NOT get into JAGS!
+  
+  l_sub <- l_raw[ctr_data$subjID==subIDs[s]]
+  length(l_sub) <- ntrials_max
+  
+  #assign arrays
+  x_all[s,] <- x_sub
+  l_all[s,] <- l_sub
+  g_all[s,] <- g_sub
+}
+
+l_all = abs(l_all)
+```
+
 ```{r}
 pred_success <- array(c(nsubs))
 for (s in 1:nsubs) {
   
   # fit jags model
-  x <- x_all[1,]
-  r <- X_all[1,]
+  x <- x_all[s,]
+  r <- g_all[s,]
+  l <- l_all[s,]
   
   ntrials <- ntrials_all[s]
   
   # Set up jags and run jags model on one subject
-  data <- list("x", "r", "ntrials")
+  data <- list("x", "r", "l", "ntrials")
   params <- c("r_pref", "delta_rate", "a_explore", "phi", "theta", "p")
   samples <- jags.parallel(data, inits = NULL, params,
                            model.file = "jags_models/VSE.txt",
@@ -243,9 +283,8 @@ for (s in 1:nsubs) {
   
   # How many correct out of 100 trials for each participant:
   pred_success[s] <- sum(x_predict==x, na.rm=T)
-  print(s);beepr::beep(sound=1)
+  print(s);beepr::beep(sound=2)
 }
-
 write.csv(pred_success, "predicted_success_VSE.csv", row.names = F)
 ```
 
