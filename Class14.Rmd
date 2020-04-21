@@ -1,0 +1,189 @@
+---
+title: "Class14"
+author: "Maris Sala"
+date: "4/21/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Hierarchical models of PVL, ORL and VSE
+
+Setup
+```{r}
+set.seed(1982)
+#setwd("~/Aarhus University/Advanced cog mod/progre")
+pacman::p_load(extraDistr, R2jags)
+
+# load control data
+ctr_data <- read.table("rawData/IGTdata_healthy_control.txt", header=T)
+```
+
+Prepare the data for the JAGS model
+Turning it into a matrix
+```{r}
+# Identify and count unique subject IDs
+subIDs <- unique(ctr_data$subjID)
+nsubs <- length(subIDs)
+ntrials_max <- 100
+
+# All choices (x) and outcomes (X)
+x_raw <- ctr_data$deck
+X_raw <- ctr_data$gain + ctr_data$loss
+```
+
+Assign choices and outcomes in trial x sub matrix
+Different number of trials across subjects. We'll need to fix this by padding arrays of < 100. Then we'll also need to record number of valid trials for each sub, then run the JAGS model on only valid trials!
+```{r}
+# Empty arrays to fill
+ntrials_all <- array(0, c(nsubs))
+x_all <- array(0, c(nsubs, ntrials_max))
+X_all <- array(0, c(nsubs, ntrials_max))
+
+# Fill the arrays! Loop over subjects
+for (s in 1:nsubs) {
+  
+  #record n trials for subject s. Count number of trials for subject
+  ntrials_all[s] <- length(x_raw[ctr_data$subjID==subIDs[s]])
+  
+  #pad trials with NA if n trials < maximum (i e 100)
+  x_sub <- x_raw[ctr_data$subjID==subIDs[s]]
+  length(x_sub) <- ntrials_max
+  
+  X_sub <- X_raw[ctr_data$subjID==subIDs[s]]
+  length(X_sub) <- ntrials_max
+  #^temporary data for subject s, padded with NA where there are no trials, the NA's do NOT get into JAGS!
+  
+  #assign arrays
+  x_all[s,] <- x_sub
+  X_all[s,] <- X_sub
+}
+```
+
+RUNNING THE HIERARCHICAL PVL MODEL
+```{r}
+#ohlawd
+x <- x_all
+X <- X_all
+
+#set up jags and run it
+data <- list("x", "X", "ntrials_all", "nsubs")
+params <- c("mu_w","mu_A","mu_theta","mu_a","lambda_w","lambda_A","lambda_theta","lambda_a")
+
+samples <- jags.parallel(data, inits = NULL, params,
+                model.file = "jags_models/hPVL.txt",
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1);beepr::beep(sound=9)
+
+par(mfrow=c(2,2))
+plot(density(samples$BUGSoutput$sims.list$mu_w))
+plot(density(samples$BUGSoutput$sims.list$mu_A))
+plot(density(samples$BUGSoutput$sims.list$mu_theta))
+plot(density(samples$BUGSoutput$sims.list$mu_a))
+plot(density(samples$BUGSoutput$sims.list$lambda_w))
+plot(density(samples$BUGSoutput$sims.list$lambda_A))
+plot(density(samples$BUGSoutput$sims.list$lambda_theta))
+plot(density(samples$BUGSoutput$sims.list$lambda_a))
+
+```
+
+
+
+
+Hierarchical ORL
+```{r}
+#ohlawd
+x_ctr <- x_all
+X_ctr <- X_all
+
+ntrials_ctr <- ntrials_all
+nsubs_ctr <- nsubs
+
+#set up jags and run it
+data <- list("x_ctr", "X_ctr", "ntrials_ctr", "nsubs_ctr")
+params <- c("mu_a_rew","mu_a_pun","mu_K","mu_omega_f", "mu_omega_p",
+            "lambda_a_rew_ctr","lambda_a_pun_ctr","lambda_K_ctr","lambda_omega_f_ctr", "lambda_omega_p_ctr")
+
+samples2 <- jags.parallel(data, inits = NULL, params,
+                model.file = "jags_models/hORL.txt",
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1);beepr::beep(sound=9)
+
+par(mfrow=c(2,2))
+plot(density(samples2$BUGSoutput$sims.list$mu_a_rew))
+plot(density(samples2$BUGSoutput$sims.list$mu_a_pun))
+plot(density(samples2$BUGSoutput$sims.list$mu_K))
+plot(density(samples2$BUGSoutput$sims.list$mu_omega_f))
+plot(density(samples2$BUGSoutput$sims.list$mu_omega_p))
+plot(density(samples2$BUGSoutput$sims.list$lambda_a_rew_ctr))
+plot(density(samples2$BUGSoutput$sims.list$lambda_a_pun_ctr))
+plot(density(samples2$BUGSoutput$sims.list$lambda_K_ctr))
+plot(density(samples2$BUGSoutput$sims.list$lambda_f_ctr))
+plot(density(samples2$BUGSoutput$sims.list$lambda_p_ctr))
+
+```
+
+
+Hierarchical VSE
+```{r}
+# Data prep
+X_raw <- ctr_data$gain
+Y_raw <- ctr_data$loss
+
+ntrials_all <- array(0,c(nsubs)) #how many trials each sub made it through
+x_all <- array(0,c(nsubs,ntrials_max))
+X_all <- array(0,c(nsubs,ntrials_max)) #our two target arrays for this model (one for x and one for X)
+Y_all <- array(0,c(nsubs,ntrials_max))
+
+for (s in 1:nsubs) {
+  #record n trials for subject s
+  ntrials_all[s] <- length(x_raw[ctr_data$subjID==subIDs[s]])
+  
+  #pad trials with NA if n trials < maximum (i.e. 100)
+  x_sub <- x_raw[ctr_data$subjID==subIDs[s]]
+  length(x_sub) <- ntrials_max
+  
+  X_sub <- X_raw[ctr_data$subjID==subIDs[s]]
+  length(X_sub) <- ntrials_max
+  
+  Y_sub <- Y_raw[ctr_data$subjID==subIDs[s]]
+  length(Y_sub) <- ntrials_max
+  
+  #assign arrays
+  x_all[s,] <- x_sub
+  X_all[s,] <- X_sub
+  Y_all[s,] <- Y_sub
+  
+}
+
+x <- x_all
+X <- X_all
+Y <- Y_all
+
+Y <- abs(Y)
+
+#set up jags and run jags model
+
+data <- list("x","X","Y", "ntrials_all", "nsubs")
+params <- c("mu_alpha", "mu_theta", "mu_delta", "mu_phi", "mu_beta", "lambda_alpha", "lambda_theta", "lambda_delta", "lambda_phi", "lambda_beta")
+
+samples3 <- jags.parallel(data, inits = NULL, params,
+                model.file = "jags_models/hVSE.txt",
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1);beepr::beep(sound=9)
+
+
+#posterior distribution plots:
+par(mfrow=c(2,2))
+plot(density(samples3$BUGSoutput$sims.list$mu_alpha))
+plot(density(samples3$BUGSoutput$sims.list$mu_theta))
+plot(density(samples3$BUGSoutput$sims.list$mu_delta))
+plot(density(samples3$BUGSoutput$sims.list$mu_phi))
+plot(density(samples3$BUGSoutput$sims.list$mu_beta))
+plot(density(samples3$BUGSoutput$sims.list$lambda_alpha))
+plot(density(samples3$BUGSoutput$sims.list$lambda_theta))
+plot(density(samples3$BUGSoutput$sims.list$lambda_delta))
+plot(density(samples3$BUGSoutput$sims.list$lambda_phi))
+plot(density(samples3$BUGSoutput$sims.list$lambda_beta))
+
+```
+
