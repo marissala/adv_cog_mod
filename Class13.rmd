@@ -182,8 +182,8 @@ params <- c("mu_w","mu_A","mu_theta","mu_a","lambda_w","lambda_A","lambda_theta"
 
 samples <- jags.parallel(data, inits = NULL, params,
                 model.file = "jags_models/hPVL.txt",
-                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1);beepr::beep(sound=9)
 
-beepr::beep(sound=9)
+
 ```
 
