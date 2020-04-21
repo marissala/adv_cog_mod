@@ -100,26 +100,29 @@ Hierarchical ORL
 ```{r}
 #ohlawd
 x_ctr <- x_all
-X_ctr <- X_all
+# Divide by 100
+X_ctr <- X_all/100
 
 ntrials_ctr <- ntrials_all
 nsubs_ctr <- nsubs
 
+## RUN THIS AGAIN WITH THE CORRECT LAMBDAS PLUS CORRECT PAYOFF
 #set up jags and run it
 data <- list("x_ctr", "X_ctr", "ntrials_ctr", "nsubs_ctr")
 params <- c("mu_a_rew","mu_a_pun","mu_K","mu_omega_f", "mu_omega_p",
-            "lambda_a_rew_ctr","lambda_a_pun_ctr","lambda_K_ctr","lambda_omega_f_ctr", "lambda_omega_p_ctr")
+            "lambda_a_rew_ctr","lambda_a_pun_ctr","lambda_K_ctr","lambda_f_ctr", "lambda_p_ctr")
 
 samples2 <- jags.parallel(data, inits = NULL, params,
                 model.file = "jags_models/hORL.txt",
                 n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1);beepr::beep(sound=9)
 
-par(mfrow=c(2,2))
+par(mfrow=c(3,2))
 plot(density(samples2$BUGSoutput$sims.list$mu_a_rew))
 plot(density(samples2$BUGSoutput$sims.list$mu_a_pun))
 plot(density(samples2$BUGSoutput$sims.list$mu_K))
 plot(density(samples2$BUGSoutput$sims.list$mu_omega_f))
 plot(density(samples2$BUGSoutput$sims.list$mu_omega_p))
+par(mfrow=c(3,2))
 plot(density(samples2$BUGSoutput$sims.list$lambda_a_rew_ctr))
 plot(density(samples2$BUGSoutput$sims.list$lambda_a_pun_ctr))
 plot(density(samples2$BUGSoutput$sims.list$lambda_K_ctr))
@@ -199,3 +202,8 @@ plot(density(samples3$BUGSoutput$sims.list$lambda_beta))
 
 ```
 
+Save samples
+```{r}
+save.image(file='hPVL_hORL_hVSE_model_samples.RData')
+load("hPVL_hORL_hVSE__model_samples.RData")
+```
