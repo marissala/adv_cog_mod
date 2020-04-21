@@ -89,6 +89,11 @@ plot(density(samples$BUGSoutput$sims.list$lambda_a))
 ```
 
 
+Trying out saving the samples
+```{r}
+save.image(file='hPVL_model_samples.RData')
+load("hPVL_model_samples.RData")
+```
 
 
 Hierarchical ORL
@@ -121,6 +126,13 @@ plot(density(samples2$BUGSoutput$sims.list$lambda_K_ctr))
 plot(density(samples2$BUGSoutput$sims.list$lambda_f_ctr))
 plot(density(samples2$BUGSoutput$sims.list$lambda_p_ctr))
 
+```
+
+
+Save samples
+```{r}
+save.image(file='hPVL_hORL_model_samples.RData')
+load("hPVL_hORL__model_samples.RData")
 ```
 
 
