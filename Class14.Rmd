@@ -110,11 +110,11 @@ nsubs_ctr <- nsubs
 #set up jags and run it
 data <- list("x_ctr", "X_ctr", "ntrials_ctr", "nsubs_ctr")
 params <- c("mu_a_rew","mu_a_pun","mu_K","mu_omega_f", "mu_omega_p",
-            "lambda_a_rew_ctr","lambda_a_pun_ctr","lambda_K_ctr","lambda_f_ctr", "lambda_p_ctr")
+            "lambda_a_rew_ctr","lambda_a_pun_ctr","lambda_K_ctr","lambda_omega_f_ctr", "lambda_omega_p_ctr")
 
 samples2 <- jags.parallel(data, inits = NULL, params,
                 model.file = "jags_models/hORL.txt",
-                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1);beepr::beep(sound=9)
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1);beepr::beep(sound=3)
 
 par(mfrow=c(3,2))
 plot(density(samples2$BUGSoutput$sims.list$mu_a_rew))
@@ -126,16 +126,15 @@ par(mfrow=c(3,2))
 plot(density(samples2$BUGSoutput$sims.list$lambda_a_rew_ctr))
 plot(density(samples2$BUGSoutput$sims.list$lambda_a_pun_ctr))
 plot(density(samples2$BUGSoutput$sims.list$lambda_K_ctr))
-plot(density(samples2$BUGSoutput$sims.list$lambda_f_ctr))
-plot(density(samples2$BUGSoutput$sims.list$lambda_p_ctr))
-
+plot(density(samples2$BUGSoutput$sims.list$lambda_omega_f_ctr))
+plot(density(samples2$BUGSoutput$sims.list$lambda_omega_p_ctr))
 ```
 
 
 Save samples
 ```{r}
-save.image(file='hPVL_hORL_model_samples.RData')
-load("hPVL_hORL__model_samples.RData")
+save.image(file='hORL_model_samples.RData')
+load("hPVL_hORL_hVSE_model_samples.RData")
 ```
 
 
@@ -188,12 +187,13 @@ samples3 <- jags.parallel(data, inits = NULL, params,
 
 
 #posterior distribution plots:
-par(mfrow=c(2,2))
+par(mfrow=c(3,2))
 plot(density(samples3$BUGSoutput$sims.list$mu_alpha))
 plot(density(samples3$BUGSoutput$sims.list$mu_theta))
 plot(density(samples3$BUGSoutput$sims.list$mu_delta))
 plot(density(samples3$BUGSoutput$sims.list$mu_phi))
 plot(density(samples3$BUGSoutput$sims.list$mu_beta))
+par(mfrow=c(3,2))
 plot(density(samples3$BUGSoutput$sims.list$lambda_alpha))
 plot(density(samples3$BUGSoutput$sims.list$lambda_theta))
 plot(density(samples3$BUGSoutput$sims.list$lambda_delta))
