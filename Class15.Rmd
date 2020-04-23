@@ -176,3 +176,9 @@ lines(density(samples$BUGSoutput$sims.list$alpha_K),col="red")
 
 ```
 
+Save environment variables
+```{r}
+save.image(file='ORL_group_comp_opioid_samples.RData')
+load("ORL_group_comp_opioid_samples.RData")
+```
+
