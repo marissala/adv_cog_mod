@@ -153,10 +153,16 @@ lines(density(samples$BUGSoutput$sims.list$alpha_omega_p),col="red")
 fit.posterior <- logspline(samples$BUGSoutput$sims.list$alpha_a_rew)
 null.posterior <- dlogspline(0, fit.posterior)
 
-null.prior     <- dnorm(0,0,(1/sqrt(.1)))                   
+null.prior <- dnorm(0,0,(1/sqrt(.1)))                   
 
 BF <- null.prior/null.posterior
 
+# We should divide posterior with prior because we are more sure that there is no difference between the groups (based on the plots below)
+opi_BF_a_rew <- dlogspline(0, (logspline(samples$BUGSoutput$sims.list$alpha_a_rew))) / dnorm(0,0,(1/sqrt(.1)))
+opi_BF_a_pun <- dlogspline(0, (logspline(samples$BUGSoutput$sims.list$alpha_a_pun))) / dnorm(0,0,(1/sqrt(.1)))
+opi_BF_omega_f <- dlogspline(0, (logspline(samples$BUGSoutput$sims.list$alpha_omega_f))) / dnorm(0,0,(1/sqrt(.1)))
+opi_BF_omega_p <- dlogspline(0, (logspline(samples$BUGSoutput$sims.list$alpha_omega_p))) / dnorm(0,0,(1/sqrt(.1)))
+opi_BF_K <- dlogspline(0, (logspline(samples$BUGSoutput$sims.list$alpha_K))) / dnorm(0,0,(1/sqrt(.1)))
 
 par(mfrow=c(3,2))
 plot(density(rnorm(10000,0,1/sqrt(1))),ylim=c(0,.7),main="a_rew")
@@ -174,6 +180,12 @@ lines(density(samples$BUGSoutput$sims.list$alpha_omega_p),col="red")
 plot(density(rnorm(10000,0,1/sqrt(1))),ylim=c(0,.7),main="K")
 lines(density(samples$BUGSoutput$sims.list$alpha_K),col="red")
 
+opi_BF_a_rew
+opi_BF_a_pun
+opi_BF_omega_f
+opi_BF_omega_p
+opi_BF_K
+
 ```
 
 Save environment variables
@@ -182,3 +194,47 @@ save.image(file='ORL_group_comp_opioid_samples.RData')
 load("ORL_group_comp_opioid_samples.RData")
 ```
 
+Group comparsion with ampfetamines
+```{r}
+# set up jags and run jags model on one subject
+data <- list("x_ctr","X_ctr","ntrials_ctr","nsubs_ctr",
+             "x_amp","X_amp","ntrials_amp","nsubs_amp") 
+params<-c("alpha_a_rew","alpha_a_pun","alpha_K","alpha_omega_f","alpha_omega_p")#,
+          #"a_rew_ctr","a_pun_ctr","K_ctr","omega_f_ctr","omega_p_ctr",
+          #"a_rew_opi","a_pun_opi","K_opi","omega_f_opi","omega_p_opi")
+samples4 <- jags(data, inits=NULL, params,
+                model.file ="jags_models/ORL_ttest.txt",
+                n.chains=3, n.iter=5000, n.burnin=1000, n.thin=1)
+```
+
+
+```{r}
+# savage dickey plot
+plot(density(rnorm(10000,0,1/sqrt(1))),ylim=c(0,1),main=" ")
+lines(density(samples4$BUGSoutput$sims.list$alpha_omega_p),col="red")
+
+fit.posterior <- logspline(samples4$BUGSoutput$sims.list$alpha_a_rew)
+null.posterior <- dlogspline(0, fit.posterior)
+
+null.prior     <- dnorm(0,0,(1/sqrt(.1)))                   
+
+BF <- null.prior/null.posterior
+
+
+par(mfrow=c(3,2))
+plot(density(rnorm(10000,0,1/sqrt(1))),ylim=c(0,.7),main="a_rew")
+lines(density(samples4$BUGSoutput$sims.list$alpha_a_rew),col="red")
+
+plot(density(rnorm(10000,0,1/sqrt(1))),ylim=c(0,.7),main="a_pun")
+lines(density(samples4$BUGSoutput$sims.list$alpha_a_pun),col="red")
+
+plot(density(rnorm(10000,0,1/sqrt(1))),ylim=c(0,.7),main="omega_f")
+lines(density(samples4$BUGSoutput$sims.list$alpha_omega_f),col="red")
+
+plot(density(rnorm(10000,0,1/sqrt(1))),ylim=c(0,.7),main="omega_p")
+lines(density(samples4$BUGSoutput$sims.list$alpha_omega_p),col="red")
+
+plot(density(rnorm(10000,0,1/sqrt(1))),ylim=c(0,.7),main="K")
+lines(density(samples4$BUGSoutput$sims.list$alpha_K),col="red")
+
+```
