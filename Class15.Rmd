@@ -1,0 +1,178 @@
+---
+title: "Class15"
+author: "Maris Sala"
+date: "4/23/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Group comparison ORL
+
+Setup
+```{r}
+set.seed(1982)
+#setwd("~/Aarhus University/Advanced cog mod/progre")
+pacman::p_load(extraDistr, R2jags)
+library(polspline)
+
+# load control data
+ctr_data <- read.table("rawData/IGTdata_healthy_control.txt", header=T)
+opi_data <- read.table("rawData/IGTdata_heroin.txt",header=TRUE)
+amp_data <- read.table("rawData/IGTdata_amphetamine.txt",header=TRUE)
+```
+
+Prepare data
+```{r}
+#----------prepare data for jags models - want trial x subject arrays for choice, gain, and loss ----
+# identify and count unique subject IDs
+subIDs_ctr <- unique(ctr_data$subjID)
+nsubs_ctr <- length(subIDs_ctr)
+
+subIDs_opi <- unique(opi_data$subjID)
+nsubs_opi <- length(subIDs_opi)
+
+subIDs_amp <- unique(amp_data$subjID)
+nsubs_amp <- length(subIDs_amp)
+
+ntrials_max <- 100
+
+# SCALE THE REWARDS DOWN SO WE DON'T NEED SUCH WIDE PRIORS
+# all choices (x) and outcomes (X)
+x_raw_ctr <- ctr_data$deck
+X_raw_ctr <- (ctr_data$gain + ctr_data$loss)/100 #note the sign!!!!!
+
+x_raw_opi <- opi_data$deck
+X_raw_opi <- (opi_data$gain + opi_data$loss)/100 #note the sign!!!!!
+
+x_raw_amp <- amp_data$deck
+X_raw_amp <- (amp_data$gain + amp_data$loss)/100 #note the sign!!!!!
+```
+
+Assign choices and outcomes to payoff matrices
+
+```{r}
+#--- assign choices and outcomes in trial x sub matrix
+
+#different number of trials across subjects. We'll need to fix this by padding arrays of < 100
+#this is just so we can make the array
+#then we'll also need to record number of valid trials for each sub, 
+#then run the JAGS model on only valid trials
+
+# empty arrays to fill
+ntrials_ctr <- array(0,c(nsubs_ctr))
+x_ctr <- array(0,c(nsubs_ctr,ntrials_max))
+X_ctr <- array(0,c(nsubs_ctr,ntrials_max))
+
+ntrials_opi <- array(0,c(nsubs_opi))
+x_opi <- array(0,c(nsubs_opi,ntrials_max))
+X_opi <- array(0,c(nsubs_opi,ntrials_max))
+
+ntrials_amp <- array(0,c(nsubs_amp))
+x_amp <- array(0,c(nsubs_amp,ntrials_max))
+X_amp <- array(0,c(nsubs_amp,ntrials_max))
+
+# make control data matrices
+for (s in 1:nsubs_ctr) {
+  
+  #record n trials for subject s
+  ntrials_ctr[s] <- length(x_raw_ctr[ctr_data$subjID==subIDs_ctr[s]])
+  
+  #pad trials with NA if n trials < maximum (i.e. 100)
+  x_sub_ctr <- x_raw_ctr[ctr_data$subjID==subIDs_ctr[s]] 
+  length(x_sub_ctr) <- ntrials_max
+  
+  X_sub_ctr <- X_raw_ctr[ctr_data$subjID==subIDs_ctr[s]] 
+  length(X_sub_ctr) <- ntrials_max
+  
+  # assign arrays
+  x_ctr[s,] <- x_sub_ctr
+  X_ctr[s,] <- X_sub_ctr
+  
+}
+
+# make control data matrices
+for (s in 1:nsubs_opi) {
+  
+  #record n trials for subject s
+  ntrials_opi[s] <- length(x_raw_opi[opi_data$subjID==subIDs_opi[s]])
+  
+  #pad trials with NA if n trials < maximum (i.e. 100)
+  x_sub_opi <- x_raw_opi[opi_data$subjID==subIDs_opi[s]] 
+  length(x_sub_opi) <- ntrials_max
+  
+  X_sub_opi <- X_raw_opi[opi_data$subjID==subIDs_opi[s]] 
+  length(X_sub_opi) <- ntrials_max
+  
+  # assign arrays
+  x_opi[s,] <- x_sub_opi
+  X_opi[s,] <- X_sub_opi
+  
+}
+
+# make amp data matrices
+for (s in 1:nsubs_amp) {
+  
+  #record n trials for subject s
+  ntrials_amp[s] <- length(x_raw_amp[amp_data$subjID==subIDs_amp[s]])
+  
+  #pad trials with NA if n trials < maximum (i.e. 100)
+  x_sub_amp <- x_raw_amp[amp_data$subjID==subIDs_amp[s]] 
+  length(x_sub_amp) <- ntrials_max
+  
+  X_sub_amp <- X_raw_amp[amp_data$subjID==subIDs_amp[s]] 
+  length(X_sub_amp) <- ntrials_max
+  
+  # assign arrays
+  x_amp[s,] <- x_sub_amp
+  X_amp[s,] <- X_sub_amp
+  
+}
+```
+
+```{r}
+# set up jags and run jags model on one subject
+data <- list("x_ctr","X_ctr","ntrials_ctr","nsubs_ctr",
+             "x_opi","X_opi","ntrials_opi","nsubs_opi") 
+params<-c("alpha_a_rew","alpha_a_pun","alpha_K","alpha_omega_f","alpha_omega_p")#,
+          #"a_rew_ctr","a_pun_ctr","K_ctr","omega_f_ctr","omega_p_ctr",
+          #"a_rew_opi","a_pun_opi","K_opi","omega_f_opi","omega_p_opi")
+samples <- jags(data, inits=NULL, params,
+                model.file ="jags_models/ORL_ttest.txt",
+                n.chains=3, n.iter=5000, n.burnin=1000, n.thin=1)
+
+```
+
+```{r}
+# savage dickey plot
+plot(density(rnorm(10000,0,1/sqrt(1))),ylim=c(0,1),main=" ")
+lines(density(samples$BUGSoutput$sims.list$alpha_omega_p),col="red")
+
+fit.posterior <- logspline(samples$BUGSoutput$sims.list$alpha_a_rew)
+null.posterior <- dlogspline(0, fit.posterior)
+
+null.prior     <- dnorm(0,0,(1/sqrt(.1)))                   
+
+BF <- null.prior/null.posterior
+
+
+par(mfrow=c(3,2))
+plot(density(rnorm(10000,0,1/sqrt(1))),ylim=c(0,.7),main="a_rew")
+lines(density(samples$BUGSoutput$sims.list$alpha_a_rew),col="red")
+
+plot(density(rnorm(10000,0,1/sqrt(1))),ylim=c(0,.7),main="a_pun")
+lines(density(samples$BUGSoutput$sims.list$alpha_a_pun),col="red")
+
+plot(density(rnorm(10000,0,1/sqrt(1))),ylim=c(0,.7),main="omega_f")
+lines(density(samples$BUGSoutput$sims.list$alpha_omega_f),col="red")
+
+plot(density(rnorm(10000,0,1/sqrt(1))),ylim=c(0,.7),main="omega_p")
+lines(density(samples$BUGSoutput$sims.list$alpha_omega_p),col="red")
+
+plot(density(rnorm(10000,0,1/sqrt(1))),ylim=c(0,.7),main="K")
+lines(density(samples$BUGSoutput$sims.list$alpha_K),col="red")
+
+```
+
