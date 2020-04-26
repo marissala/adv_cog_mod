@@ -133,8 +133,8 @@ plot(density(samples2$BUGSoutput$sims.list$lambda_omega_p_ctr))
 
 Save samples
 ```{r}
-save.image(file='hORL_model_samples.RData')
-load("hPVL_hORL_hVSE_model_samples.RData")
+#save.image(file='hORL_truncated_model_samples.RData')
+load("hORL_truncated_model_samples.RData")
 ```
 
 
