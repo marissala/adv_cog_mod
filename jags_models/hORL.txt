@@ -1,15 +1,15 @@
 model {
   #priors
   alpha_a_rew ~  dnorm(0,1)
-  mu_a_rew ~ dnorm(0,1)
+  mu_a_rew ~ dnorm(0,1)T(0,1)
   lambda_a_rew_ctr ~ dgamma(.1,.1) 
   
   alpha_a_pun ~  dnorm(0,1)
-  mu_a_pun ~ dnorm(0,1)
+  mu_a_pun ~ dnorm(0,1)T(0,1)
   lambda_a_pun_ctr ~ dgamma(.1,.1)
 
   alpha_K ~  dnorm(0,1)
-  mu_K ~ dnorm(0,1)
+  mu_K ~ dnorm(0,1)T(0,)
   lambda_K_ctr ~ dgamma(.1,.1)
   
   alpha_omega_f ~  dnorm(0,1)
