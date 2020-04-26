@@ -168,7 +168,16 @@ library(ggplot2)
 PVL = ggplot(pred_success, aes(x)) +
   geom_density()
 
+PVL = PVL +
+  ggtitle("PVL: Posterior predictive checks") +
+  geom_vline(xintercept=25, color = "red") +
+  theme_bw()
+
 median(pred_success$x)
+sum(pred_success$x<=25)
+sum(pred_success$x>25)
+
+length(pred_success$x)
 ```
 
 Predicted success for ORL
@@ -218,7 +227,16 @@ library(ggplot2)
 ORL = ggplot(pred_success, aes(x)) +
   geom_density()
 
+ORL = ORL +
+  ggtitle("ORL: Posterior predictive checks") +
+  geom_vline(xintercept=25, color = "red") +
+  theme_bw()
+
 median(pred_success$x)
+sum(pred_success$x<=25)
+sum(pred_success$x>25)
+
+length(pred_success$x)
 ```
 
 
@@ -312,10 +330,18 @@ library(ggplot2)
 VSE = ggplot(pred_success, aes(x)) +
   geom_density()
 
+VSE = VSE + 
+  ggtitle("VSE: Posterior predictive checks") +
+  geom_vline(xintercept=25, color = "red") +
+  theme_bw()
 
 gridExtra::grid.arrange(PVL,ORL,VSE)
 
 median(pred_success$x)
+sum(pred_success$x<=25)
+sum(pred_success$x>25)
+
+length(pred_success$x)
 ```
 
 
