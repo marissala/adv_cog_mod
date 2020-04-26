@@ -2,12 +2,12 @@ model {
 
   ###### Priors ################
   alpha_a_rew ~  dnorm(0,1)
-  mu_a_rew ~ dnorm(0,1)
+  mu_a_rew ~ dnorm(0,1)T(0,1)
   lambda_a_rew_ctr ~ dgamma(.1,.1) 
   lambda_a_rew_amp ~ dgamma(.1,.1) 
   
   alpha_a_pun ~  dnorm(0,1)
-  mu_a_pun ~ dnorm(0,1)
+  mu_a_pun ~ dnorm(0,1)T(0,1)
   lambda_a_pun_ctr ~ dgamma(.1,.1) 
   lambda_a_pun_amp ~ dgamma(.1,.1) 
 
