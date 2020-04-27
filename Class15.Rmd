@@ -190,8 +190,15 @@ opi_BF_K
 
 Save environment variables
 ```{r}
+#Original samples, ran with normal priors for mu's and alphas
 #save.image(file='ORL_group_comp_opioid_samples.RData')
-save.image(file='ORL_group_comp_truncated_opioid_samples.RData')
+
+#Truncated mu's
+#save.image(file='ORL_group_comp_truncated_opioid_samples.RData')
+
+#Truncated mu's and alphas
+save.image(file='ORL_group_comp_trunc_alpha_opioid_samples.RData')
+
 #load("ORL_group_comp_opioid_samples.RData")
 ```
 
@@ -254,7 +261,14 @@ amp_BF_K
 
 Save environment variables
 ```{r}
+#Original samples, ran with normal priors for mu's and alphas
 #save.image(file='ORL_group_comp_amp_samples.RData')
-save.image(file='ORL_group_comp_truncated_amp_samples.RData')
+
+#Truncated mu's
+#save.image(file='ORL_group_comp_truncated_amp_samples.RData')
+
+#Truncated mu's and alphas
+save.image(file='ORL_group_comp_trunc_alpha_amp_samples.RData')
+
 #load("ORL_group_comp_amp_samples.RData")
 ```
