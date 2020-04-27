@@ -191,7 +191,8 @@ opi_BF_K
 Save environment variables
 ```{r}
 #save.image(file='ORL_group_comp_opioid_samples.RData')
-load("ORL_group_comp_opioid_samples.RData")
+save.image(file='ORL_group_comp_truncated_opioid_samples.RData')
+#load("ORL_group_comp_opioid_samples.RData")
 ```
 
 Group comparsion with ampfetamines
@@ -253,6 +254,7 @@ amp_BF_K
 
 Save environment variables
 ```{r}
-save.image(file='ORL_group_comp_amp_samples.RData')
-load("ORL_group_comp_amp_samples.RData")
+#save.image(file='ORL_group_comp_amp_samples.RData')
+save.image(file='ORL_group_comp_truncated_amp_samples.RData')
+#load("ORL_group_comp_amp_samples.RData")
 ```
