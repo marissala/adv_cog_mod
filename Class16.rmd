@@ -21,8 +21,8 @@ set.seed(1985)
 ```{r}
 source("R_fun/EWA.R")
 source("R_fun/CC.R")
-n_agents <- 3
-n_trials <- 15
+n_agents <- 10
+n_trials <- 100
 n_tokens <- 20
 pi <- 1.2 #number that we multiply the common goods pool with
 dat_ewa <- EWA(n_agents, n_trials, n_tokens, pi, 
@@ -69,7 +69,7 @@ fit_ewa <- jags.parallel(data = list(n_agents=n_agents,
                      n.chains = 4, n.iter = 3000, n.burnin = 1000,
                      model.file = "jags_models/EWA_j.txt"
                      )
-fit_ewa
+#fit_ewa
 ## CC
 fit <- jags.parallel(data = list(n_agents=n_agents, 
                                  n_trials=n_trials, 
@@ -81,5 +81,12 @@ fit <- jags.parallel(data = list(n_agents=n_agents,
                      n.chains = 4, n.iter = 3000, n.burnin = 1000,
                      model.file = "jags_models/CC.txt"
                      )
-fit
+#fit
 ```
+
+Save environment variables
+```{r}
+save.image(file='EWA_CC_samples.RData')
+#load("EWA_CC_samples.RData")
+```
+
