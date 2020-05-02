@@ -1,0 +1,13 @@
+---
+title: "Class17"
+author: "Maris Sala"
+date: "5/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Parameter recovery of EWA and CC
+
