@@ -226,6 +226,22 @@ for (i in 1:n_simulations) {
 ## CC: plotting predictions vs actual values
 
 ```{r}
+#Look at player 1  
+omega_1_1st <- plot_actual_predicted(omega_1_true[1,], omega_1_infer[1,], caption = F)+
+  ggtitle("Omega 1 (player 1)")
+lambda_cc_1st <- plot_actual_predicted(lambda_cc_true[1,], lambda_cc_infer[1,], caption = F)+
+  ggtitle("Lambda cc (player 1)")
+gamma_1st <- plot_actual_predicted(gamma_true[1,], gamma_infer[1,], caption = F)+
+  ggtitle("Gamma (player 1)")
+p_0_1st <- plot_actual_predicted(p_0_true[1,], p_0_infer[1,], caption = F)+
+  ggtitle("p_0 (player 1)")
+p_beta_1st <- plot_actual_predicted(p_beta_true[1,], p_beta_infer[1,], caption = F)+
+  ggtitle("p_beta (player 1)")
+gb_1_1st <- plot_actual_predicted(gb_1_true[1,], gb_1_infer[1,], caption = F)+
+  ggtitle("Gb_1 (player 1)")
+
+cc_img_1st_player <-  gridExtra::grid.arrange(omega_1_1st, lambda_cc_1st, gamma_1st, p_0_1st, p_beta_1st, gb_1_1st)
+
 #Look at all players 
 omega_1_all <- tibble(actual = as.vector(omega_1_true), predicted = as.vector(omega_1_infer))
 omega_1_plot <- plot_actual_predicted(omega_1_all$actual, omega_1_all$predicted, caption = F)+
@@ -261,5 +277,6 @@ cc_img_all_players <- gridExtra::grid.arrange(omega_1_plot, lambda_cc_plot, gamm
 ```{r}
 beepr::beep(sound=5)
 
-save.image("paramrecovCC_EWA.RData")
+#save.image("paramrecovCC_EWA.RData")
+load("paramrecovCC_EWA.RData")
 ```
