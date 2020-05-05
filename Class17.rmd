@@ -11,3 +11,255 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Parameter recovery of EWA and CC
 
+# Set-up
+```{r}
+#libraries
+pacman::p_load(extraDistr, R2jags, tidyverse, beepr) 
+load('EWA_CC_samples.RData')
+
+#set seed
+set.seed(1985)
+
+# maximum aposterior function:
+jag_map <- function(param_samples){
+  dens <- density(param_samples)
+  return(dens$x[dens$y == max(dens$y)])
+}
+
+#get plotting functions
+source("quick_n_clean_plots.R")
+
+#get EWA and CC formward simulation functions 
+source("R_fun/EWA.R")
+source("R_fun/CC.R")
+```
+
+# EWA parameter recovery: 100 simulations
+```{r}
+n_simulations <- 50
+n_agents <- 5
+n_trials <- 40
+n_tokens <- 20
+pi <- 1.2 #number that we multiply the common goods pool with
+
+delta_true <- array(0, c(n_agents, n_simulations))
+delta_infer <- array(0, c(n_agents, n_simulations))
+
+rho_true <- array(0, c(n_agents, n_simulations))
+rho_infer <- array(0, c(n_agents, n_simulations))
+
+phi_true <- array(0, c(n_agents, n_simulations))
+phi_infer <- array(0, c(n_agents, n_simulations))
+
+lambda_true <- array(0, c(n_agents, n_simulations))
+lambda_infer <- array(0, c(n_agents, n_simulations))
+
+
+######THE LOOOP
+for (i in 1:n_simulations) {
+  print(i)
+  
+  #generate data
+  dat_ewa <- EWA(n_agents, n_trials, n_tokens, pi, 
+           delta=runif(n_agents, 0, 1),
+           rho=runif(n_agents, 0, 1),
+           phi=runif(n_agents, 0, 1),
+           lambda=runif(n_agents, 0, 5))
+  
+  #keep track of actual parameter values
+  delta_true[,i] <- dat_ewa$internal_states$delta
+  rho_true[,i] <- dat_ewa$internal_states$rho
+  phi_true[,i] <- dat_ewa$internal_states$phi
+  lambda_true[,i] <- dat_ewa$internal_states$lambda
+  
+  #Prepare choices and group choices to fit ewa
+  c <- dat_ewa$choice
+  group_c <- array(0,c(n_agents,n_trials))
+  for (n in 1:n_agents) {
+    group_c[n,] <- colSums(c[-n,])
+    }
+  
+  #Fit ewa
+  fit_ewa <- jags.parallel(data = list(n_agents=n_agents, 
+                                 n_trials=n_trials, 
+                                 n_tokens=n_tokens,
+                                 c=c,
+                                 group_c=group_c,
+                                 pi=pi),
+                     inits = NULL,
+                     parameters.to.save = c("delta", "rho", "phi", "lambda"),
+                     n.chains = 4, n.iter = 3000, n.burnin = 1000,
+                     model.file = "/Users/anitakurm/Desktop/Masters 2nd semester/Cognitive-Modelling/adv_cog_mod/jags_models/EWA_j.txt"
+                     )
+  
+  for (n in 1:n_agents) {
+    delta_infer[n,i] <- jag_map(fit_ewa$BUGSoutput$sims.list$delta[,n])
+    
+    rho_infer[n,i] <- jag_map(fit_ewa$BUGSoutput$sims.list$rho[,n])
+    
+    phi_infer[n,i] <- jag_map(fit_ewa$BUGSoutput$sims.list$phi[,n])
+    
+    lambda_infer[n,i] <- jag_map(fit_ewa$BUGSoutput$sims.list$lambda[,n])
+  }
+
+  };beepr::beep(sound=1)
+
+```
+
+
+## EWA: plotting predictions vs actual values
+```{r}
+#Look at player 1  
+delta_1st <- plot_actual_predicted(delta_true[1,], delta_infer[1,], caption = F)+
+  ggtitle("Delta (player 1)")
+rho_1st <- plot_actual_predicted(rho_true[1,], rho_infer[1,], caption = F)+
+  ggtitle("Rho (player 1)")
+phi_1st <- plot_actual_predicted(phi_true[1,], phi_infer[1,], caption = F)+
+  ggtitle("Phi(player 1)")
+lambda_1st <- plot_actual_predicted(lambda_true[1,], lambda_infer[1,], caption = F)+
+  ggtitle("Lambda (player 1)")
+
+img_1st_player <-  gridExtra::grid.arrange(delta_1st, rho_1st, phi_1st,lambda_1st)
+
+#Look at all players 
+delta_all <- tibble(actual = as.vector(delta_true), predicted = as.vector(delta_infer))
+delta_plot <- plot_actual_predicted(delta_all$actual, delta_all$predicted, caption = F)+
+  ggtitle("Delta (all players)")
+
+rho_all <- tibble(actual = as.vector(rho_true), predicted = as.vector(rho_infer))
+rho_plot <- plot_actual_predicted(rho_all$actual, rho_all$predicted, caption = F)+
+  ggtitle("Rho (all players)")
+
+phi_all <- tibble(actual = as.vector(phi_true), predicted = as.vector(phi_infer))
+phi_plot <- plot_actual_predicted(phi_all$actual, phi_all$predicted, caption = F)+
+  ggtitle("Phi (all players)")
+
+lambda_all <- tibble(actual = as.vector(lambda_true), predicted = as.vector(lambda_infer))
+lambda_plot <- plot_actual_predicted(lambda_all$actual, lambda_all$predicted, caption = F)+
+  ggtitle("Lambda (all players)")
+
+img_all_players <- gridExtra::grid.arrange(delta_plot, rho_plot, phi_plot,lambda_plot)
+
+delta_plot
+```
+
+
+
+
+# CC parameter recovery
+```{r}
+source("/Users/anitakurm/Desktop/Masters 2nd semester/Cognitive-Modelling/adv_cog_mod/R_fun/CC.R")
+#empty true and infer arrays
+gb_1_true <- array(0, c(n_agents, n_simulations))
+gb_1_infer <- array(0, c(n_agents, n_simulations))
+
+omega_1_true <- array(0, c(n_agents, n_simulations))
+omega_1_infer <- array(0, c(n_agents, n_simulations))
+
+lambda_cc_true <- array(0, c(n_agents, n_simulations))
+lambda_cc_infer <- array(0, c(n_agents, n_simulations))
+
+gamma_true<- array(0, c(n_agents, n_simulations))
+gamma_infer<- array(0, c(n_agents, n_simulations))
+
+p_0_true<- array(0, c(n_agents, n_simulations))
+p_0_infer<- array(0, c(n_agents, n_simulations))
+
+p_beta_true <- array(0, c(n_agents, n_simulations))
+p_beta_infer <- array(0, c(n_agents, n_simulations))
+
+
+######THE LOOOP
+for (i in 1:n_simulations) {
+  print(i)
+  
+  #generate data
+  parameters = list(
+    omega_1 = runif(n_agents, 0, 1),
+    lambda = runif(n_agents, 0, 0.5),
+    gamma = runif(n_agents, 0, 1),
+    p_0 = runif(n_agents, 0, 20),
+    p_beta = runif(n_agents, 0, 2),
+    gb_1 = round(runif(n_agents, 1, 20), 0)
+  )
+  
+  dat_cc <- CC(n_agents, n_trials, vals=seq(1, 20, 1), parameters)
+  
+  #keep track of actual parameter values
+  gb_1_true[,i] <- dat_cc$parameters$gb_1
+  omega_1_true[,i] <- dat_cc$parameters$omega_1
+  lambda_cc_true[,i] <- dat_cc$parameters$lambda
+  gamma_true[,i] <- dat_cc$parameters$gamma
+  p_0_true[,i] <- dat_cc$parameters$p_0
+  p_beta_true[,i] <- dat_cc$parameters$p_beta
+  
+  
+  #Fit CC
+  fit <- jags.parallel(data = list(n_agents=n_agents, 
+                                   n_trials=n_trials, 
+                                   ga=dat_cc$ga,
+                                   c=dat_cc$c,
+                                   vals=dat_cc$vals),
+                       inits = NULL,
+                       parameters.to.save = c("omega_1", "lambda", "gamma", "p_0", "p_beta", "gb_1"),
+                       n.chains = 4, n.iter = 3000, n.burnin = 1000,
+                       model.file = "/Users/anitakurm/Desktop/Masters 2nd semester/Cognitive-Modelling/adv_cog_mod/jags_models/CC.txt"
+  )
+ 
+   
+  #keep track of inferred values
+  for (n in 1:n_agents) {
+    omega_1_infer[n,i] <- jag_map(fit$BUGSoutput$sims.list$omega_1[,n])
+    lambda_cc_infer[n,i] <- jag_map(fit$BUGSoutput$sims.list$lambda[,n])
+    gamma_infer[n,i] <- jag_map(fit$BUGSoutput$sims.list$gamma[,n])
+    p_0_infer[n,i] <- jag_map(fit$BUGSoutput$sims.list$p_0[,n])
+    p_beta_infer[n,i] <- jag_map(fit$BUGSoutput$sims.list$p_beta[,n])
+    gb_1_infer[n,i] <- jag_map(fit$BUGSoutput$sims.list$gb_1)
+    
+  }
+  
+};beepr::beep(sound=9)
+
+
+```
+
+## CC: plotting predictions vs actual values
+
+```{r}
+#Look at all players 
+omega_1_all <- tibble(actual = as.vector(omega_1_true), predicted = as.vector(omega_1_infer))
+omega_1_plot <- plot_actual_predicted(omega_1_all$actual, omega_1_all$predicted, caption = F)+
+  ggtitle("Omega 1 (all players)")
+
+lambda_cc_all <- tibble(actual = as.vector(lambda_cc_true), predicted = as.vector(lambda_cc_infer))
+lambda_cc_plot <- plot_actual_predicted(lambda_cc_all$actual, lambda_cc_all$predicted, caption = F)+
+  ggtitle("Lambda cc (all players)")
+
+
+gamma_all <- tibble(actual = as.vector(gamma_true), predicted = as.vector(gamma_infer))
+gamma_plot <- plot_actual_predicted(gamma_all$actual, gamma_all$predicted, caption = F)+
+  ggtitle("Gamma (all players)")
+
+p_0_all <- tibble(actual = as.vector(p_0_true), predicted = as.vector(p_0_infer))
+p_0_plot <- plot_actual_predicted(p_0_all$actual, p_0_all$predicted, caption = F)+
+  ggtitle("p_0 (all players)")
+
+p_beta_all <- tibble(actual = as.vector(p_beta_true), predicted = as.vector(p_beta_infer))
+p_beta_plot <- plot_actual_predicted(p_beta_all$actual, p_beta_all$predicted, caption = F)+
+  ggtitle("p_beta (all players)")
+
+gb_1_all <- tibble(actual = as.vector(gb_1_true), predicted = as.vector(gb_1_infer))
+gb_1_plot <- plot_actual_predicted(gb_1_all$actual, gb_1_all$predicted, caption = F)+
+  ggtitle("Gb_1 (all players)")
+
+
+cc_img_all_players <- gridExtra::grid.arrange(omega_1_plot, lambda_cc_plot, gamma_plot, p_0_plot, p_beta_plot, gb_1_plot)
+
+
+```
+
+```{r}
+beepr::beep(sound=5)
+
+save.image("paramrecovCC_EWA.RData")
+```
