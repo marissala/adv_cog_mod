@@ -109,34 +109,51 @@ for (i in 1:n_simulations) {
 
 ## EWA: plotting predictions vs actual values
 ```{r}
+#get plotting functions
+source("quick_n_clean_plots.R")
+
 #Look at player 1  
 delta_1st <- plot_actual_predicted(delta_true[1,], delta_infer[1,], caption = F)+
-  ggtitle("Delta (player 1)")
+  ggtitle("Delta (1 player)") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
 rho_1st <- plot_actual_predicted(rho_true[1,], rho_infer[1,], caption = F)+
-  ggtitle("Rho (player 1)")
+  ggtitle("Rho (1 player)") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
 phi_1st <- plot_actual_predicted(phi_true[1,], phi_infer[1,], caption = F)+
-  ggtitle("Phi(player 1)")
+  ggtitle("Phi (1 player)") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
 lambda_1st <- plot_actual_predicted(lambda_true[1,], lambda_infer[1,], caption = F)+
-  ggtitle("Lambda (player 1)")
+  ggtitle("Lambda (1 player)") +
+  theme_bw()
 
 img_1st_player <-  gridExtra::grid.arrange(delta_1st, rho_1st, phi_1st,lambda_1st)
 
 #Look at all players 
 delta_all <- tibble(actual = as.vector(delta_true), predicted = as.vector(delta_infer))
 delta_plot <- plot_actual_predicted(delta_all$actual, delta_all$predicted, caption = F)+
-  ggtitle("Delta (all players)")
+  ggtitle("Delta (all players)") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
 
 rho_all <- tibble(actual = as.vector(rho_true), predicted = as.vector(rho_infer))
 rho_plot <- plot_actual_predicted(rho_all$actual, rho_all$predicted, caption = F)+
-  ggtitle("Rho (all players)")
+  ggtitle("Rho (all players)") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
 
 phi_all <- tibble(actual = as.vector(phi_true), predicted = as.vector(phi_infer))
 phi_plot <- plot_actual_predicted(phi_all$actual, phi_all$predicted, caption = F)+
-  ggtitle("Phi (all players)")
+  ggtitle("Phi (all players)") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
 
 lambda_all <- tibble(actual = as.vector(lambda_true), predicted = as.vector(lambda_infer))
 lambda_plot <- plot_actual_predicted(lambda_all$actual, lambda_all$predicted, caption = F)+
-  ggtitle("Lambda (all players)")
+  ggtitle("Lambda (all players)") +
+  theme_bw()
 
 img_all_players <- gridExtra::grid.arrange(delta_plot, rho_plot, phi_plot,lambda_plot)
 
@@ -148,7 +165,7 @@ delta_plot
 
 # CC parameter recovery
 ```{r}
-source("/Users/anitakurm/Desktop/Masters 2nd semester/Cognitive-Modelling/adv_cog_mod/R_fun/CC.R")
+
 #empty true and infer arrays
 gb_1_true <- array(0, c(n_agents, n_simulations))
 gb_1_infer <- array(0, c(n_agents, n_simulations))
@@ -228,11 +245,18 @@ for (i in 1:n_simulations) {
 ```{r}
 #Look at player 1  
 omega_1_1st <- plot_actual_predicted(omega_1_true[1,], omega_1_infer[1,], caption = F)+
-  ggtitle("Omega 1 (player 1)")
+  ggtitle("Omega 1 (player 1)") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
 lambda_cc_1st <- plot_actual_predicted(lambda_cc_true[1,], lambda_cc_infer[1,], caption = F)+
-  ggtitle("Lambda cc (player 1)")
+  ggtitle("Lambda cc (player 1)") +
+  theme_bw() +
+  xlim(0,0.5) + ylim(0,0.5)
 gamma_1st <- plot_actual_predicted(gamma_true[1,], gamma_infer[1,], caption = F)+
-  ggtitle("Gamma (player 1)")
+  ggtitle("Gamma (player 1)") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
+
 p_0_1st <- plot_actual_predicted(p_0_true[1,], p_0_infer[1,], caption = F)+
   ggtitle("p_0 (player 1)")
 p_beta_1st <- plot_actual_predicted(p_beta_true[1,], p_beta_infer[1,], caption = F)+
@@ -240,36 +264,51 @@ p_beta_1st <- plot_actual_predicted(p_beta_true[1,], p_beta_infer[1,], caption =
 gb_1_1st <- plot_actual_predicted(gb_1_true[1,], gb_1_infer[1,], caption = F)+
   ggtitle("Gb_1 (player 1)")
 
-cc_img_1st_player <-  gridExtra::grid.arrange(omega_1_1st, lambda_cc_1st, gamma_1st, p_0_1st, p_beta_1st, gb_1_1st)
+cc_img_1st_player <-  gridExtra::grid.arrange(omega_1_1st, lambda_cc_1st, gamma_1st,nrow = 2) 
+cc_img2_1st_player <-  gridExtra::grid.arrange(p_0_1st, p_beta_1st, gb_1_1st, nrow=2)
 
 #Look at all players 
 omega_1_all <- tibble(actual = as.vector(omega_1_true), predicted = as.vector(omega_1_infer))
 omega_1_plot <- plot_actual_predicted(omega_1_all$actual, omega_1_all$predicted, caption = F)+
-  ggtitle("Omega 1 (all players)")
+  ggtitle("Omega 1 (all players)") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
 
 lambda_cc_all <- tibble(actual = as.vector(lambda_cc_true), predicted = as.vector(lambda_cc_infer))
 lambda_cc_plot <- plot_actual_predicted(lambda_cc_all$actual, lambda_cc_all$predicted, caption = F)+
-  ggtitle("Lambda cc (all players)")
+  ggtitle("Lambda cc (all players)") +
+  theme_bw() +
+  xlim(0,0.5) + ylim(0,0.5)
 
 
 gamma_all <- tibble(actual = as.vector(gamma_true), predicted = as.vector(gamma_infer))
 gamma_plot <- plot_actual_predicted(gamma_all$actual, gamma_all$predicted, caption = F)+
-  ggtitle("Gamma (all players)")
+  ggtitle("Gamma (all players)") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
+
+cc_img_all_players <- gridExtra::grid.arrange(omega_1_plot, lambda_cc_plot, gamma_plot,nrow=2)
 
 p_0_all <- tibble(actual = as.vector(p_0_true), predicted = as.vector(p_0_infer))
 p_0_plot <- plot_actual_predicted(p_0_all$actual, p_0_all$predicted, caption = F)+
-  ggtitle("p_0 (all players)")
+  ggtitle("p_0 (all players)") +
+  theme_bw() +
+  xlim(0,20) + ylim(0,20)
 
 p_beta_all <- tibble(actual = as.vector(p_beta_true), predicted = as.vector(p_beta_infer))
 p_beta_plot <- plot_actual_predicted(p_beta_all$actual, p_beta_all$predicted, caption = F)+
-  ggtitle("p_beta (all players)")
+  ggtitle("p_beta (all players)") +
+  theme_bw() +
+  xlim(0,2) + ylim(0,2)
 
 gb_1_all <- tibble(actual = as.vector(gb_1_true), predicted = as.vector(gb_1_infer))
 gb_1_plot <- plot_actual_predicted(gb_1_all$actual, gb_1_all$predicted, caption = F)+
-  ggtitle("Gb_1 (all players)")
+  ggtitle("Gb_1 (all players)") +
+  theme_bw() +
+  xlim(0,20) + ylim(0,20)
 
 
-cc_img_all_players <- gridExtra::grid.arrange(omega_1_plot, lambda_cc_plot, gamma_plot, p_0_plot, p_beta_plot, gb_1_plot)
+cc_img2_all_players <- gridExtra::grid.arrange(p_0_plot, p_beta_plot, gb_1_plot, nrow=2)
 
 
 ```
