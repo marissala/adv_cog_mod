@@ -46,7 +46,7 @@ RW_sims <- RW(payoff, ntrials, a, beta)
 par(mfrow=c(3,1)) #plot with 3 rows and 1 column
 plot(RW_sims$Q[,1])
 plot(RW_sims$Q[,2])
-plot(X)
+#plot(X)
 
 ```
 
@@ -69,15 +69,24 @@ par(mfrow=c(1,1))
 plot(density(a_infer))
 plot(density(beta_infer))
 
+d <- density(a_infer)
+plot(d, main="RW model: a")
+polygon(d, col="lightblue", border="lightblue")
+median(a_infer)
+
+d <- density(beta_infer)
+plot(d, main="RW model: beta")
+polygon(d, col="lightblue", border="lightblue")
+median(beta_infer)
+
 
 #run full parameter recovery
-niterations <- 10
+niterations <- 100
 true_a <- array(0, c(niterations))
 true_beta <- array(0, c(niterations))
 
 infer_a <- array(0,c(niterations))
 infer_beta <- array(0,c(niterations))
-
 
 for (i in 1:niterations) {
   # true parameters
@@ -105,7 +114,7 @@ for (i in 1:niterations) {
   X <- samples$BUGSoutput$sims.list$beta
   infer_beta[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
   
-  print(i)
+  print(i); beepr::beep(sound=1)
 }
 
 a_infer <- samples$BUGSoutput$sims.list$a
@@ -114,6 +123,23 @@ beta_infer <- samples$BUGSoutput$sims.list$beta
 par(mfrow=c(1,1))
 plot(density(a_infer))
 plot(density(beta_infer))
+
+#get plotting functions
+source("quick_n_clean_plots.R")
+infer_a
+#Beautiful plots
+image_a = plot_actual_predicted(true_a, infer_a, caption = F)+
+  ggtitle("RW model: a") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
+image_beta = plot_actual_predicted(true_beta, infer_beta, caption = F)+
+  ggtitle("RW model: beta") +
+  theme_bw() +
+  xlim(0,5) + ylim(0,5)
+
+img_rw_model <-  gridExtra::grid.arrange(image_a, image_beta, nrow=1)
+
+#plot(density(inferredTheta))
 
 ```
 
