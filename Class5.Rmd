@@ -44,7 +44,7 @@ Random model!
 theta <- .7
 #b <- c(theta,1-theta)
 
-source("random_model.R")
+source("R_fun/random_model.R")
 random_sims <- random(payoff, ntrials, theta)
 
 #-----------------#
@@ -59,7 +59,7 @@ data <- list("x", "ntrials")
 params <- c("b")
 
 samples <- jags(data, inits = NULL, params,
-                model.file = "random.txt",
+                model.file = "jags_models/random.txt",
                 n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
 
 samples
