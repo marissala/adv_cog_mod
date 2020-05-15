@@ -84,7 +84,7 @@ data <- list("G", "ntrials") #has to be a list in this case, look in the workspa
 params <- c("theta") #what are we interested in keeping track of, theta as a distribution
 
 samples <- jags(data, inits = NULL, params,
-                model.file = "chick.txt",
+                model.file = "jags_models/chick.txt",
                 n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1) #inits could be important when there are convergence issues
 
 samples
@@ -93,12 +93,16 @@ x <- samples$BUGSoutput$sims.list$theta #guesses at theta
 
 plot(x)
 
-plot(density(x)) #this is the posterior
-#^this is the inference basically, it should be 0.7 but its more around 0.6
-x
+plot(density(x))
 
 median(x)
+
+d <- density(x)
+plot(d, main="Posterior distribution: Theta")
+polygon(d, col="lightblue", border="lightblue")
 ```
+
+
 stuff we get out is a distribution, list of samples from a posterior distribution
 the more chains the more independence you have in results but also the more comp power it takes
 
@@ -110,7 +114,7 @@ data <- list("G", "ntrials") #has to be a list in this case, look in the workspa
 params <- c("theta", "theta1", "alpha") #what are we interested in keeping track of, theta as a distribution
 
 samples <- jags(data, inits = NULL, params,
-                model.file = "chick_learning.txt",
+                model.file = "jags_models/chick_learning.txt",
                 n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1) #inits could be important when there are convergence issues
 
 samples
@@ -128,8 +132,19 @@ median(samples$BUGSoutput$sims.list$theta[,2])
 # see what the alpha is to be estimated as
 plot(density(samples$BUGSoutput$sims.list$alpha))
 
-median(samples$BUGSoutput$sims.list$alpha)
 
+# Plot the theta posterior on 1st trial
+d <- density(samples$BUGSoutput$sims.list$theta[,1])
+plot(d, main="Posterior distribution: Theta (trial 1)")
+polygon(d, col="lightblue", border="lightblue")
+
+median(samples$BUGSoutput$sims.list$theta[,1])
+
+# Plot the alpha posterior
+d <- density(samples$BUGSoutput$sims.list$alpha)
+plot(d, main="Posterior distribution: Alpha")
+polygon(d, col="lightblue", border="lightblue")
+median(samples$BUGSoutput$sims.list$alpha)
 ```
 
 Class4:
