@@ -9,7 +9,10 @@
 # feel free to add new plots to the mix
 # if you want to load with documentation I suggest you check klmr/modules on github
 
-pacman::p_load(tidyverse, gpmisc, gganimate, ggstance)
+library(tidyverse)
+#library(gpmisc)
+library(gganimate)
+library(ggstance)
 
 #'@title log sequence
 #'@description
@@ -220,7 +223,7 @@ plot_actual_predicted <- function(actual, predicted, add_rmse = T, add_r2 = T, c
   
   
   p <- ggplot2::ggplot(data = d, aes(x = actual, y = predicted)) + 
-    geom_point(alpha = 0.5) +
+    geom_point(alpha = 0.5, color="#000066") +
     geom_abline(intercept = 0, slope = 1) + 
     ggplot2::labs(title = ' ', y = 'Predicted', x = 'Actual', caption = c_text) + 
     ggplot2::theme_bw() + 
@@ -230,7 +233,7 @@ plot_actual_predicted <- function(actual, predicted, add_rmse = T, add_r2 = T, c
     e <- Metrics::rmse(d$actual, d$predicted)
     r2 <- cor(d$actual, d$predicted)
     # placement
-    yc <- min(predicted) + (max(predicted)-min(predicted))/8
+    yc <- min(predicted) + (max(predicted)-min(predicted))/6 #M: was 8 before
     xc <- max(actual) - (max(actual)-min(actual))/8
     lab_text = c()
     if (add_rmse){
@@ -240,7 +243,7 @@ plot_actual_predicted <- function(actual, predicted, add_rmse = T, add_r2 = T, c
       lab_text = c(lab_text, paste0("R^2:", signif(r2, 2)))
     }
     p <- p + 
-      ggplot2::annotate("text", x = xc, y = c(yc, yc*0.85), label = lab_text, parse = T)
+      ggplot2::annotate("text", x = xc, y = c(yc, yc*0.25), label = lab_text, parse = T) #M: was 0.85
   }
   return(p)
 }
