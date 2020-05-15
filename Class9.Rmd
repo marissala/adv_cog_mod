@@ -108,6 +108,29 @@ plot(density(a_infer))
 plot(density(w_infer))
 plot(density(A_infer))
 plot(density(theta_infer))
+
+
+par(mfrow=c(2,2))
+d_a <- density(a_infer)
+plot(d_a, main="PVL model: a")
+polygon(d_a, col="lightblue", border="lightblue")
+
+d_w <- density(w_infer)
+plot(d_w, main="PVL model: w")
+polygon(d_w, col="lightblue", border="lightblue")
+
+d_A <- density(A_infer)
+plot(d_A, main="PVL model: A")
+polygon(d_A, col="lightblue", border="lightblue")
+
+d_theta <- density(theta_infer)
+plot(d_theta, main="PVL model: theta")
+polygon(d_theta, col="lightblue", border="lightblue")
+
+median(a_infer)
+median(w_infer)
+median(A_infer)
+median(theta_infer)
 ```
 
 Run parameter recovery
@@ -117,7 +140,7 @@ Run parameter recovery
 #plot(density(A_infer))
 #plot(density(theta_infer))
 
-niterations <- 50
+niterations <- 100
 PVL_t.a <- array(0, c(niterations))
 PVL_t.w <- array(0, c(niterations))
 PVL_t.A <- array(0, c(niterations))
@@ -134,7 +157,7 @@ ntrials <- 100
 for (i in 1:niterations) {
   # true parameters
   a <- rtnorm(1,0,1, a=0,b=1)
-  w <- rhcauchy(0,1,0)
+  w <- rhcauchy(1,0.25)
   #A <- rhcauchy(1,0.25)
   A <- rtnorm(1,0,1, a=0,b=1)
   theta <- rtnorm(1,0,1, a = 0)
@@ -210,4 +233,36 @@ plot(density(PVL_i.w))
 par(mfrow=c(2,1))
 plot(density(PVL_t.theta))
 plot(density(PVL_i.theta))
+
+#get plotting functions
+source("quick_n_clean_plots.R")
+
+#throw away the outlier in w
+#PVL_i.w
+#PVL_t.w <- PVL_t.w[PVL_t.w < 5]
+#PVL_i.w <- PVL_i.w[PVL_i.w < 5]
+
+#Beautiful plots
+image_PVL_A = plot_actual_predicted(PVL_t.A, PVL_i.A, caption = F)+
+  ggtitle("PVL-delta model: A") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
+image_PVL_a = plot_actual_predicted(PVL_t.a, PVL_i.a, caption = F)+
+  ggtitle("PVL-delta model: a") +
+  theme_bw()# +
+  #xlim(0,1) + ylim(0,1)
+image_PVL_w = plot_actual_predicted(PVL_t.w, PVL_i.w, caption = F)+
+  ggtitle("PVL-delta model: w") +
+  theme_bw()# +
+  #xlim(0,15) + ylim(0,15)
+image_PVL_theta = plot_actual_predicted(PVL_t.theta, PVL_i.theta, caption = F)+
+  ggtitle("PVL-delta model: theta") +
+  theme_bw()# +
+  #xlim(0,3) + ylim(0,3)
+
+img_PVL_model <-  gridExtra::grid.arrange(image_PVL_A, image_PVL_a, image_PVL_w, image_PVL_theta, nrow=2)
 ```
+```{r}
+save.image(file='PVL_parameter_recovery.RData')
+```
+
