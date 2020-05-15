@@ -16,9 +16,3 @@ random <- function(payoff, ntrials, b) {
   result <- list(x=x, r=r)
   return(result)
 }
-pacman::p_load(devtools, digest)
-options(repos = getOption("repos")["CRAN"])
-devtools::install_github("ludvigolsen/cvms", ref="hparams_tuning")
-10
-
-library(cvms)
