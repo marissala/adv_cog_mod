@@ -69,6 +69,17 @@ par(mfrow=c(1,1))
 plot(density(a_infer))
 plot(density(beta_infer))
 
+d <- density(a_infer)
+plot(d, main="Kernal model: a")
+polygon(d, col="lightblue", border="lightblue")
+median(a_infer)
+
+d <- density(beta_infer)
+plot(d, main="Kernal model: beta")
+polygon(d, col="lightblue", border="lightblue")
+median(beta_infer)
+
+
 ```
 
 Model recovery for 2 models: RW and kernel model, we should expect 50% model recovery (gotta add the 1 somewhere to improve this bad recovery)
@@ -89,7 +100,7 @@ colSums(payoff)
 
 ### --- ###
 
-niterations <- 20 #set this higher (than 5) later plz
+niterations <- 100 #set this higher (than 5) later plz
 
 DICs_RW_dat <- array(0,c(niterations,2))
 DICs_kernel_dat <- array(0,c(niterations,2))
@@ -143,6 +154,7 @@ for (i in 1:niterations) {
   DICs_kernel_dat[i,1] <- Kernel.dat_Kernel.mod$BUGSoutput$DIC
   DICs_kernel_dat[i,2] <- Kernel.dat_RW.mod$BUGSoutput$DIC
   
+  print(i); beepr::beep(sound=1)
 }
 
 best_RW <- array(0,c(niterations))
@@ -160,8 +172,15 @@ best_kernel
 
 Ludvig's package for confusion matrix
 ```{r}
-pacman::p_load(broom, tibble)
+#save.image(file='kernal_rw_model_recovery.RData')
+
+#devtools::install_github("tidyverse/broom")
+library(broom)
 library(cvms)
+#library(tidyverse)
+library(tibble)
+
+#remove.packages("broom")
 
 # 0 is best model
 best_kernel
@@ -192,7 +211,7 @@ plot_confusion_matrix(cfm,
 Parameter recovery
 ```{r}
 #run full parameter recovery
-niterations <- 30
+niterations <- 100
 true_a <- array(0, c(niterations))
 true_beta <- array(0, c(niterations))
 
@@ -228,7 +247,7 @@ for (i in 1:niterations) {
   X <- samples$BUGSoutput$sims.list$beta
   infer_beta[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
   
-  print(i)
+  print(i); beepr::beep(sound=1)
 }
 
 plot(true_a, infer_a)
@@ -245,7 +264,7 @@ gridExtra::grid.arrange(
 #full parameter recovery for kernel model
 
 #run full parameter recovery
-niterations <- 30
+niterations <- 100
 kernel_true_a <- array(0, c(niterations))
 kernel_true_beta <- array(0, c(niterations))
 
@@ -281,7 +300,7 @@ for (i in 1:niterations) {
   X <- samples$BUGSoutput$sims.list$beta
   kernel_infer_beta[i] <- density(X)$x[which(density(X)$y==max(density(X)$y))]
   
-  print(i)
+  print(i); beepr::beep(sound=1)
 }
 
 plot(kernel_true_a, kernel_infer_a)
@@ -293,5 +312,20 @@ gridExtra::grid.arrange(
   plot_actual_predicted(kernel_true_beta,kernel_infer_beta),
   ncol = 2
 )
+
+#get plotting functions
+source("quick_n_clean_plots.R")
+infer_a
+#Beautiful plots
+image_a = plot_actual_predicted(kernel_true_a,kernel_infer_a, caption = F)+
+  ggtitle("Kernal model: a") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
+image_beta = plot_actual_predicted(kernel_true_beta,kernel_infer_beta, caption = F)+
+  ggtitle("Kernal model: beta") +
+  theme_bw() +
+  xlim(0,5) + ylim(0,5)
+
+img_rw_model <-  gridExtra::grid.arrange(image_a, image_beta, nrow=1)
 ```
 
