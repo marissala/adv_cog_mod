@@ -160,7 +160,7 @@ plot(density(theta_infer))
 
 Parameter recovery
 ```{r}
-niterations <- 50 #30 later
+niterations <- 100 #30 later
 ORL_t.a_rew <- array(0, c(niterations))
 ORL_t.a_pun <- array(0, c(niterations))
 ORL_t.beta_f <- array(0, c(niterations))
