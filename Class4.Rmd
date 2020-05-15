@@ -21,15 +21,15 @@ library(R2jags)
 Recover dif parameter combinations for the learning model
 ```{r}
 #the alpha we put in
-trueAlpha <- array(0,c(20))
-inferredAlpha <- array(c(20)) #map
+trueAlpha <- array(0,c(100))
+inferredAlpha <- array(c(100)) #map
 
-trueTheta <- array(0,c(20))
-inferredTheta <- array(c(20))
+trueTheta <- array(0,c(100))
+inferredTheta <- array(c(100))
 
 ntrials <- 100
 
-for (i in 1:20) {
+for (i in 1:100) {
   Glearn <- array(0, c(100)) #guess for our learning model
   theta <- array(0, c(100)) #theta is going to update every trial
   # we need a starting theta!
@@ -57,7 +57,7 @@ for (i in 1:20) {
   params <- c("theta", "theta1", "alpha") #what are we interested in keeping track of, theta as a distribution
   
   samples <- jags(data, inits = NULL, params,
-                  model.file = "chick_learning.txt",
+                  model.file = "jags_models/chick_learning.txt",
                   n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1)
   
   alpha.post <- samples$BUGSoutput$sims.list$alpha
@@ -75,7 +75,81 @@ for (i in 1:20) {
 ```{r}
 plot(trueAlpha,inferredAlpha)
 plot(trueTheta, inferredTheta)
+
+#get plotting functions
+source("quick_n_clean_plots.R")
+
+#Beautiful plots
+theta1_plot <- plot_actual_predicted(trueTheta, inferredTheta, caption = F)+
+  ggtitle("Learning model: theta1") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
+
+alpha_plot <- plot_actual_predicted(trueAlpha, inferredAlpha, caption = F)+
+  ggtitle("Learning model: alpha") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
+
+img_learning_model <-  gridExtra::grid.arrange(theta1_plot, alpha_plot, nrow=1)
 ```
+
+Recover dif parameter combinations for the beta-binomial model
+```{r}
+#the alpha we put in
+trueTheta <- array(0,c(100))
+inferredTheta <- array(c(100))
+
+ntrials <- 100
+
+for (i in 1:100) {
+  Gfixed <- array(0, c(100)) #guess for our learning model
+  theta <- .7 #theta is fixed
+  
+  for (t in 1:ntrials) {
+    Gfixed[t] <- rbinom(1,1,theta) #each element in the array populated with consequences of the model
+  }
+
+  trueTheta[i] <- theta
+  
+  # ---- run inference for the learning model using learning simulations
+  G <- Gfixed
+
+  data <- list("G", "ntrials") #has to be a list in this case, look in the workspace for G
+  params <- c("theta") #what are we interested in keeping track of, theta as a distribution
+  
+  samples <- jags(data, inits = NULL, params,
+                model.file = "jags_models/chick.txt",
+                n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1) #inits could be important when there are convergence issues
+  
+  theta.post <- samples$BUGSoutput$sims.list$theta
+  #max a posteriori for alpha
+  inferredTheta[i] <- density(theta.post)$x[which(density(theta.post)$y==max(density(theta.post)$y) )]
+}
+
+
+```
+
+Visualize
+```{r}
+plot(trueTheta, inferredTheta)
+
+#get plotting functions
+source("quick_n_clean_plots.R")
+
+#Beautiful plots
+plot_actual_predicted(trueTheta, inferredTheta, caption = F)+
+  ggtitle("Beta-binomial model: theta") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
+
+plot(density(inferredTheta))
+
+d <- density(inferredTheta)
+plot(d, main="Beta-binomial model: density of inferred theta")
+polygon(d, col="lightblue", border="lightblue")
+median(inferredTheta)
+```
+
 
 Model recovery!
 have to have 1 model thats better than the other bc we are using the DIC to compare 2 models
@@ -128,7 +202,7 @@ data <- list("G", "ntrials") #has to be a list in this case, look in the workspa
 params <- c("theta") #what are we interested in keeping track of, theta as a distribution
 
 samples <- jags(data, inits = NULL, params,
-                model.file = "chick.txt",
+                model.file = "jags_models/chick.txt",
                 n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1) #inits could be important when there are convergence issues
 
 DIC.fixed_fixed <- samples$BUGSoutput$DIC
@@ -140,7 +214,7 @@ data <- list("G", "ntrials") #has to be a list in this case, look in the workspa
 params <- c("theta") #what are we interested in keeping track of, theta as a distribution
 
 samples <- jags(data, inits = NULL, params,
-                model.file = "chick.txt", #DONT CHANGE THE FILE HERE!
+                model.file = "jags_models/chick.txt", #DONT CHANGE THE FILE HERE!
                 n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1) #inits could be important when there are convergence issues
 
 DIC.learning_fixed <- samples$BUGSoutput$DIC
@@ -152,7 +226,7 @@ data <- list("G", "ntrials") #has to be a list in this case, look in the workspa
 params <- c("theta") #what are we interested in keeping track of, theta as a distribution
 
 samples <- jags(data, inits = NULL, params,
-                model.file = "chick_learning.txt", #DONT CHANGE THE FILE HERE!
+                model.file = "jags_models/chick_learning.txt", #DONT CHANGE THE FILE HERE!
                 n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1) #inits could be important when there are convergence issues
 
 DIC.fixed_learning <- samples$BUGSoutput$DIC
@@ -165,7 +239,7 @@ data <- list("G", "ntrials") #has to be a list in this case, look in the workspa
 params <- c("theta") #what are we interested in keeping track of, theta as a distribution
 
 samples <- jags(data, inits = NULL, params,
-                model.file = "chick_learning.txt", #DONT CHANGE THE FILE HERE!
+                model.file = "jags_models/chick_learning.txt", #DONT CHANGE THE FILE HERE!
                 n.chains = 3, n.iter = 5000, n.burnin = 1000, n.thin = 1) #inits could be important when there are convergence issues
 
 DIC.learning_learning <- samples$BUGSoutput$DIC
@@ -204,3 +278,32 @@ y <- factor(c(DIC.fixed_fixed, DIC.learning_learning))
 confusionMatrix(x,y)
 ```
 
+Ludvig's package for confusion matrix
+```{r}
+pacman::p_load(broom, tibble)
+library(cvms)
+
+# 0 is best model
+best_kernel
+bk = replace(best_kernel, best_kernel==1, 0)
+bk = replace(bk, bk == 2, 1)
+
+# 1 is best model
+best_RW
+brw = replace(best_RW, best_RW==2, 0)
+
+# combine
+tg = c(brw, bk)
+
+# Results in a tibble
+d_confusion <- tibble("target" = c(runif(length(best_RW),1,1), runif(length(best_kernel),0,0)),
+                      "prediction" = tg)
+
+cfm <- tidy(table(d_confusion))
+
+plot_confusion_matrix(cfm,
+                      targets_col = "target",
+                      predictions_col = "prediction",
+                      counts_col = "n")
+
+```
