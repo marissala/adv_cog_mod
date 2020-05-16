@@ -210,29 +210,38 @@ plot(PVL_t.A, PVL_i.A)
 plot(PVL_t.theta, PVL_i.theta)
 
 source("quick_n_clean_plots.R")
-gridExtra::grid.arrange(
-  plot_actual_predicted(PVL_t.a, PVL_i.a),
-  plot_actual_predicted(PVL_t.w, PVL_i.w),
-  plot_actual_predicted(PVL_t.A, PVL_i.A),
-  plot_actual_predicted(PVL_t.theta, PVL_i.theta),
-  ncol = 2
-)
 
 par(mfrow=c(2,1))
-plot(density(PVL_t.A))
-plot(density(PVL_i.A))
+d1 <- density(PVL_t.A)
+plot(d1, main="PVL model: true A")
+polygon(d1, col="lightblue", border="lightblue")
+d2 <- density(PVL_i.A)
+plot(d2, main="PVL model: inferred A")
+polygon(d2, col="lightblue", border="lightblue")
 
 par(mfrow=c(2,1))
-plot(density(PVL_t.a))
-plot(density(PVL_i.a))
+d1 <- density(PVL_t.a)
+plot(d1, main="PVL model: true a")
+polygon(d1, col="lightblue", border="lightblue")
+d2 <- density(PVL_i.a)
+plot(d2, main="PVL model: inferred a")
+polygon(d2, col="lightblue", border="lightblue")
 
 par(mfrow=c(2,1))
-plot(density(PVL_t.w))
-plot(density(PVL_i.w))
+d1 <- density(PVL_t.w)
+plot(d1, main="PVL model: true w")
+polygon(d1, col="lightblue", border="lightblue")
+d2 <- density(PVL_i.w)
+plot(d2, main="PVL model: inferred w")
+polygon(d2, col="lightblue", border="lightblue")
 
 par(mfrow=c(2,1))
-plot(density(PVL_t.theta))
-plot(density(PVL_i.theta))
+d1 <- density(PVL_t.theta)
+plot(d1, main="PVL model: true theta")
+polygon(d1, col="lightblue", border="lightblue")
+d2 <- density(PVL_i.theta)
+plot(d2, main="PVL model: inferred theta")
+polygon(d2, col="lightblue", border="lightblue")
 
 #get plotting functions
 source("quick_n_clean_plots.R")
@@ -246,19 +255,19 @@ source("quick_n_clean_plots.R")
 image_PVL_A = plot_actual_predicted(PVL_t.A, PVL_i.A, caption = F)+
   ggtitle("PVL-delta model: A") +
   theme_bw() +
-  xlim(0,1) + ylim(0,1)
+  xlim(0,1.5) + ylim(0,1.5)
 image_PVL_a = plot_actual_predicted(PVL_t.a, PVL_i.a, caption = F)+
   ggtitle("PVL-delta model: a") +
-  theme_bw()# +
-  #xlim(0,1) + ylim(0,1)
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
 image_PVL_w = plot_actual_predicted(PVL_t.w, PVL_i.w, caption = F)+
   ggtitle("PVL-delta model: w") +
-  theme_bw()# +
-  #xlim(0,15) + ylim(0,15)
+  theme_bw() +
+  xlim(0,15) + ylim(0,15)
 image_PVL_theta = plot_actual_predicted(PVL_t.theta, PVL_i.theta, caption = F)+
   ggtitle("PVL-delta model: theta") +
-  theme_bw()# +
-  #xlim(0,3) + ylim(0,3)
+  theme_bw() +
+  xlim(0,3) + ylim(0,3)
 
 img_PVL_model <-  gridExtra::grid.arrange(image_PVL_A, image_PVL_a, image_PVL_w, image_PVL_theta, nrow=2)
 ```
