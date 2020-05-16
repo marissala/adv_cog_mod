@@ -156,6 +156,33 @@ plot(density(beta_f_infer))
 plot(density(beta_p_infer))
 plot(density(K_infer))
 plot(density(theta_infer))
+
+par(mfrow=c(2,3))
+d <- density(a_rew_infer)
+plot(d, main="ORL model: a_rew")
+polygon(d, col="lightblue", border="lightblue")
+
+d <- density(a_pun_infer)
+plot(d, main="ORL model: a_pun")
+polygon(d, col="lightblue", border="lightblue")
+
+d <- density(beta_f_infer)
+plot(d, main="ORL model: beta_f")
+polygon(d, col="lightblue", border="lightblue")
+
+d <- density(beta_p_infer)
+plot(d, main="ORL model: beta_p")
+polygon(d, col="lightblue", border="lightblue")
+
+d <- density(K_infer)
+plot(d, main="ORL model: K")
+polygon(d, col="lightblue", border="lightblue")
+
+median(a_rew_infer)
+median(a_pun_infer)
+median(beta_f_infer)
+median(beta_p_infer)
+median(K_infer)
 ```
 
 Parameter recovery
@@ -181,12 +208,12 @@ ntrials <- 100
 for (i in 1:niterations) {
   # true parameters
   a_rew <- runif(1,0,1)
-  a_pun <- runif(1,0,1)
+  a_pun <- rtnorm(1,0,1, a = 0, b = 0.5)
   beta_f <- rnorm(1,0,1) #should be right now
   beta_p <- rnorm(1,0,1) #should be right now
   #K <- runif(1,0,1) #incorrect
   K <- rtnorm(1,0,1, a = 0) #should be correct
-  theta <- runif(1,0,1)
+  theta <- 1 #runif(1,0,1)
   
   #run function and extract responses
   source("R_fun/ORL.R")
@@ -272,5 +299,39 @@ plot(density(ORL_i.K))
 par(mfrow=c(2,1))
 plot(density(ORL_t.theta))
 plot(density(ORL_i.theta))
+
+#Beautiful plots
+image_ORL_a_rew = plot_actual_predicted(ORL_t.a_rew, ORL_i.a_rew, caption = F)+
+  ggtitle("ORL model: a_rew") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
+image_ORL_a_pun = plot_actual_predicted(ORL_t.a_pun, ORL_i.a_pun, caption = F)+
+  ggtitle("ORL model: a_pun") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
+image_ORL_beta_f = plot_actual_predicted(ORL_t.beta_f, ORL_i.beta_f, caption = F)+
+  ggtitle("ORL model: beta_f") +
+  theme_bw() +
+  xlim(-2.5,2.5) + ylim(-2.5,2.5)
+image_ORL_beta_p = plot_actual_predicted(ORL_t.beta_p, ORL_i.beta_p, caption = F)+
+  ggtitle("ORL model: beta_p") +
+  theme_bw() +
+  xlim(-2.5,2.5) + ylim(-2.5,2.5)
+image_ORL_K = plot_actual_predicted(ORL_t.K, ORL_i.K, caption = F)+
+  ggtitle("ORL model: K") +
+  theme_bw() +
+  xlim(0,3) + ylim(0,3)
+image_ORL_theta = plot_actual_predicted(ORL_t.theta, ORL_i.theta, caption = F)+
+  ggtitle("ORL model: theta") +
+  theme_bw()
+
+img_PVL_model <-  gridExtra::grid.arrange(image_ORL_a_rew, image_ORL_a_pun, nrow=1)
+gridExtra::grid.arrange(image_ORL_beta_f, image_ORL_beta_p)
+image_ORL_K#, nrow=3, ncol=3)
 ```
 Did not save results because have to run them again with correct beta values!!
+
+```{r}
+
+```
+
