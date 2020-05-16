@@ -329,9 +329,9 @@ img_PVL_model <-  gridExtra::grid.arrange(image_ORL_a_rew, image_ORL_a_pun, nrow
 gridExtra::grid.arrange(image_ORL_beta_f, image_ORL_beta_p)
 image_ORL_K#, nrow=3, ncol=3)
 ```
-Did not save results because have to run them again with correct beta values!!
 
+Save results
 ```{r}
-
+save.image("ORL_parameter_recovery.RData")
 ```
 
