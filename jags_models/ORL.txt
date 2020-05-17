@@ -1,10 +1,10 @@
 model {
   #priors
-  a_rew ~ dnorm(0,0.3)T(0,0.5)
-  a_pun ~ dnorm(0,0.3)T(0,.5) #both at the bottom and at the top - almost uniform; they can't be risk seeking for gains, and risk averse for losses (assuming prospect theory)
-  beta_f ~ dnorm(0,.5)
-  beta_p ~ dnorm(0,.5) #uniform but for calculation reasons we do this
-  K <- 1
+  a_rew ~ dnorm(0,1)T(0,1)#dnorm(0,0.3)T(0,0.5)
+  a_pun ~ dnorm(0,1)T(0,.5)#dnorm(0,0.3)T(0,.5) #both at the bottom and at the top - almost uniform; they can't be risk seeking for gains, and risk averse for losses (assuming prospect theory)
+  beta_f ~ dnorm(0,3)
+  beta_p ~ dnorm(0,3) #uniform but for calculation reasons we do this
+  K ~ dt(0,1,1)T(0,)
   theta <- 1 #dnorm(0,1)T(0,1)
   
   C <- 3
