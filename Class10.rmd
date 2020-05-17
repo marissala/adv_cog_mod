@@ -276,29 +276,7 @@ gridExtra::grid.arrange(
   ncol = 2
 );beepr::beep(sound=3)
 
-par(mfrow=c(2,1))
-plot(density(ORL_t.a_rew))
-plot(density(ORL_i.a_rew))
 
-par(mfrow=c(2,1))
-plot(density(ORL_t.a_pun))
-plot(density(ORL_i.a_pun))
-
-par(mfrow=c(2,1))
-plot(density(ORL_t.beta_f))
-plot(density(ORL_i.beta_f))
-
-par(mfrow=c(2,1))
-plot(density(ORL_t.beta_p))
-plot(density(ORL_i.beta_p))
-
-par(mfrow=c(2,1))
-plot(density(ORL_t.K))
-plot(density(ORL_i.K))
-
-par(mfrow=c(2,1))
-plot(density(ORL_t.theta))
-plot(density(ORL_i.theta))
 
 #Beautiful plots
 image_ORL_a_rew = plot_actual_predicted(ORL_t.a_rew, ORL_i.a_rew, caption = F)+
@@ -333,5 +311,56 @@ image_ORL_K#, nrow=3, ncol=3)
 Save results
 ```{r}
 save.image("ORL_parameter_recovery.RData")
+```
+
+```{r}
+load("ORL_parameter_recovery.RData")
+par(mfrow=c(2,1))
+d1 <- density(ORL_t.a_rew)
+plot(d1, main="ORL model: true a_rew")
+polygon(d1, col="lightblue", border="lightblue")
+d2 <- density(ORL_i.a_rew)
+plot(d2, main="ORL model: inferred a_rew")
+polygon(d2, col="lightblue", border="lightblue")
+
+par(mfrow=c(2,1))
+d1 <- density(ORL_t.a_pun)
+plot(d1, main="ORL model: true a_pun")
+polygon(d1, col="lightblue", border="lightblue")
+d2 <- density(ORL_i.a_pun)
+plot(d2, main="ORL model: inferred a_pun")
+polygon(d2, col="lightblue", border="lightblue")
+
+par(mfrow=c(2,1))
+d1 <- density(ORL_t.beta_f)
+plot(d1, main="ORL model: true beta_f")
+polygon(d1, col="lightblue", border="lightblue")
+d2 <- density(ORL_i.beta_f)
+plot(d2, main="ORL model: inferred beta_f")
+polygon(d2, col="lightblue", border="lightblue")
+
+par(mfrow=c(2,1))
+d1 <- density(ORL_t.beta_p)
+plot(d1, main="ORL model: true beta_p")
+polygon(d1, col="lightblue", border="lightblue")
+d2 <- density(ORL_i.beta_p)
+plot(d2, main="ORL model: inferred beta_p")
+polygon(d2, col="lightblue", border="lightblue")
+
+par(mfrow=c(2,1))
+d1 <- density(ORL_t.K)
+plot(d1, main="ORL model: true K")
+polygon(d1, col="lightblue", border="lightblue")
+d2 <- density(ORL_i.K)
+plot(d2, main="ORL model: inferred K")
+polygon(d2, col="lightblue", border="lightblue")
+
+par(mfrow=c(2,1))
+d1 <- density(ORL_t.theta)
+plot(d1, main="ORL model: true theta")
+polygon(d1, col="lightblue", border="lightblue")
+d2 <- density(ORL_i.theta)
+plot(d2, main="ORL model: inferred theta")
+polygon(d2, col="lightblue", border="lightblue")
 ```
 
