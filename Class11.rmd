@@ -120,18 +120,34 @@ a_explore_infer <- samples$BUGSoutput$sims.list$a_explore
 phi_infer <- samples$BUGSoutput$sims.list$phi
 theta_infer <- samples$BUGSoutput$sims.list$theta
 
-par(mfrow=c(3,3))
-plot(density(r_pref_infer))
-plot(density(delta_rate_infer))
-plot(density(a_explore_infer))
-plot(density(phi_infer))
-plot(density(theta_infer))
+par(mfrow=c(2,3))
+d <- density(r_pref_infer)
+plot(d, main="VSE model: r_pref")
+polygon(d, col="lightblue", border="lightblue")
+d <- density(delta_rate_infer)
+plot(d, main="VSE model: delta_rate")
+polygon(d, col="lightblue", border="lightblue")
+d <- density(a_explore_infer)
+plot(d, main="VSE model: a_explore")
+polygon(d, col="lightblue", border="lightblue")
+d <- density(phi_infer)
+plot(d, main="VSE model: phi")
+polygon(d, col="lightblue", border="lightblue")
+d <- density(theta_infer)
+plot(d, main="VSE model: theta")
+polygon(d, col="lightblue", border="lightblue")
+
+median(r_pref_infer)
+median(delta_rate_infer)
+median(a_explore_infer)
+median(phi_infer)
+median(theta_infer)
 
 ```
 
 Parameter recovery
 ```{r}
-niterations <- 50
+niterations <- 100
 VSE_t.rp <- array(0, c(niterations))
 VSE_t.dr <- array(0, c(niterations))
 VSE_t.a <- array(0, c(niterations))
@@ -196,39 +212,80 @@ for (i in 1:niterations) {
 
 beepr::beep(sound=3)
 
-plot(VSE_t.rp, VSE_i.rp)
-plot(VSE_t.dr, VSE_i.dr)
-plot(VSE_t.a, VSE_i.a)
-plot(VSE_t.phi, VSE_i.phi)
-plot(VSE_t.theta, VSE_i.theta)
+library(ggplot2)
+#Beautiful plots
+image_VSE_rp = plot_actual_predicted(VSE_t.rp, VSE_i.rp, caption = F)+
+  ggtitle("VSE model: risk_pref") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
+image_VSE_dr = plot_actual_predicted(VSE_t.dr, VSE_i.dr, caption = F)+
+  ggtitle("VSE model: delta_rate") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
+image_VSE_a = plot_actual_predicted(VSE_t.a, VSE_i.a, caption = F)+
+  ggtitle("VSE model: a_explore") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
+image_VSE_phi = plot_actual_predicted(VSE_t.phi, VSE_i.phi, caption = F)+
+  ggtitle("VSE model: phi") +
+  theme_bw() +
+  xlim(-15,15) + ylim(-15,15)
+image_VSE_theta = plot_actual_predicted(VSE_t.theta, VSE_i.theta, caption = F)+
+  ggtitle("VSE model: theta") +
+  theme_bw() +
+  xlim(0,1) + ylim(0,1)
 
-source("quick_n_clean_plots.R")
-plot_actual_predicted(VSE_t.rp, VSE_i.rp)
-plot_actual_predicted(VSE_t.dr, VSE_i.dr)
-plot_actual_predicted(VSE_t.a, VSE_i.a)
-plot_actual_predicted(VSE_t.phi, VSE_i.phi)
-plot_actual_predicted(VSE_t.theta, VSE_i.theta)
-beepr::beep(sound=9)
+img_PVL_model <-  gridExtra::grid.arrange(image_VSE_rp, image_VSE_dr, ncol = 2)
+gridExtra::grid.arrange(image_VSE_a, image_VSE_phi, image_VSE_theta, ncol=2)
+
+# Save results
+save.image("VSE_parameter_recovery.RData")
+
+```
+
+
+Comparing posteriors of true and inferred values
+
+```{r}
+par(mfrow=c(2,1))
+d1 <- density(VSE_t.rp)
+plot(d1, main="VSE model: risk_pref")
+polygon(d1, col="lightblue", border="lightblue")
+d2 <- density(VSE_i.rp)
+plot(d2, main="VSE model: risk_pref")
+polygon(d2, col="lightblue", border="lightblue")
 
 par(mfrow=c(2,1))
-plot(density(VSE_t.rp))
-plot(density(VSE_i.rp))
+d1 <- density(VSE_t.dr)
+plot(d1, main="VSE model: delta_rate")
+polygon(d1, col="lightblue", border="lightblue")
+d2 <- density(VSE_i.dr)
+plot(d2, main="VSE model: delta_rate")
+polygon(d2, col="lightblue", border="lightblue")
 
 par(mfrow=c(2,1))
-plot(density(VSE_t.dr))
-plot(density(VSE_i.dr))
+d1 <- density(VSE_t.a)
+plot(d1, main="VSE model: a_explore")
+polygon(d1, col="lightblue", border="lightblue")
+d2 <- density(VSE_i.a)
+plot(d2, main="VSE model: a_explore")
+polygon(d2, col="lightblue", border="lightblue")
 
 par(mfrow=c(2,1))
-plot(density(VSE_t.a))
-plot(density(VSE_i.a))
+d1 <- density(VSE_t.phi)
+plot(d1, main="VSE model: phi")
+polygon(d1, col="lightblue", border="lightblue")
+d2 <- density(VSE_i.phi)
+plot(d2, main="VSE model: phi")
+polygon(d2, col="lightblue", border="lightblue")
 
 par(mfrow=c(2,1))
-plot(density(VSE_t.phi))
-plot(density(VSE_i.phi))
-
-par(mfrow=c(2,1))
-plot(density(VSE_t.theta))
-plot(density(VSE_i.theta))
+d1 <- density(VSE_t.theta)
+plot(d1, main="VSE model: theta")
+polygon(d1, col="lightblue", border="lightblue")
+d2 <- density(VSE_i.theta)
+plot(d2, main="VSE model: theta")
+polygon(d2, col="lightblue", border="lightblue")
 
 ```
 
