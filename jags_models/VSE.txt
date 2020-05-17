@@ -1,11 +1,11 @@
 model {
 
   #specify priors
-  r_pref ~ dnorm(0,.3)T(0,1)
-  delta_rate ~ dnorm(0,.3)T(0,1)
-  a_explore ~ dnorm(0,.3)T(0,1)
-  phi ~ dnorm(0,.5)
-  theta ~ dnorm(0,.3)T(0,1)
+  r_pref ~ dnorm(0,1)T(0,1)  #dnorm(0,.3)T(0,1)
+  delta_rate ~ dnorm(0,1)T(0,1) #dnorm(0,.3)T(0,1)
+  a_explore ~ dnorm(0,1)T(0,1) #dnorm(0,.3)T(0,1)
+  phi ~ dnorm(0,10)
+  theta ~ dnorm(0,1)T(0,1) #dnorm(0,.3)T(0,1)
   
   # gut feelings on 1st trial
   p[1, 1:4] <- c(0.25, 0.25, 0.25, 0.25)
