@@ -128,6 +128,27 @@ plot(density(samples2$BUGSoutput$sims.list$lambda_a_pun_ctr))
 plot(density(samples2$BUGSoutput$sims.list$lambda_K_ctr))
 plot(density(samples2$BUGSoutput$sims.list$lambda_omega_f_ctr))
 plot(density(samples2$BUGSoutput$sims.list$lambda_omega_p_ctr))
+
+par(mfrow=c(3,2))
+d <- density(samples2$BUGSoutput$sims.list$mu_a_rew)
+plot(d, main="Hierarchical ORL model: mu a_rew")
+polygon(d, col="lightblue", border="lightblue")
+
+d <- density(samples2$BUGSoutput$sims.list$mu_a_pun)
+plot(d, main="Hierarchical ORL model: mu a_pun")
+polygon(d, col="lightblue", border="lightblue")
+
+d <- density(samples2$BUGSoutput$sims.list$mu_K)
+plot(d, main="Hierarchical ORL model: mu K")
+polygon(d, col="lightblue", border="lightblue")
+
+d <- density(samples2$BUGSoutput$sims.list$mu_omega_f)
+plot(d, main="Hierarchical ORL model: mu omega_f")
+polygon(d, col="lightblue", border="lightblue")
+
+d <- density(samples2$BUGSoutput$sims.list$mu_omega_p)
+plot(d, main="Hierarchical ORL model: mu omega_p")
+polygon(d, col="lightblue", border="lightblue")
 ```
 
 
